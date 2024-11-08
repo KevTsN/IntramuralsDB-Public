@@ -1,0 +1,19 @@
+@media screen and (max-width: 900px){
+    #welcome-left, #welcome-right {width: 100%;}
+    .content{
+        margin-top: 20px;
+    }
+    #login-left{
+        width:100%;
+    }
+    #hey-rodney{
+        margin:auto;
+    }
+}
+
+@media screen and (max-width: 852px){
+    /* prolly change width */
+    .gender-button-cont{
+        width: 100%;
+    }
+}
