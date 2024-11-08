@@ -5,7 +5,8 @@
 /.pnp
 .pnp.js
 
-*.env 
+# dotenv environment variables file
+.env
 
 # testing
 /coverage
