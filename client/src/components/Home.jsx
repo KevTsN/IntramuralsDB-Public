@@ -4,26 +4,18 @@ import {faVolleyball, faBasketball, faFutbol, faPersonRunning,
     faCircleChevronDown, faCircleChevronUp
 } from '@fortawesome/free-solid-svg-icons'
 import { useNavigate } from "react-router-dom"
-import { useStudentStore } from "../Stores"
+import { useStudentStore, useCurrLeagueStore } from "../Stores"
 import {PropTypes} from 'prop-types'
+import { useShallow } from 'zustand/react/shallow'
 
 
-class Team {
-    constructor(name, sport, numPlayers,level,gender, wins, losses) {
-      this.name = name;
-      this.sport = sport;
-      this.numPlayers=numPlayers;
-      this.level=level;
-      this.gender=gender;
-      this.wins = wins;
-      this.losses=losses;
-    }
-  }
 export function Home(){
 
     const [confirmChanges, setConfirmChanges] = useState(false)
     const teams=useStudentStore((state)=>state.teams)
     const updateTeams = useStudentStore((state) => state.updateTeams)
+    const leagues=useStudentStore((state)=>state.leagues)
+    const updateLeagues = useStudentStore((state) => state.updateLeagues)
 
     const sid =useStudentStore((state)=>state.studentID)
 
@@ -36,6 +28,7 @@ export function Home(){
     const [teamIdError, setTeamIdError] = useState("")
 
     const [joinShow, setJoinShow] = useState(false)
+    const [leagueShow, setLeagueShow] = useState(false)
     //keep as string for sql query
 
     const [numTeams,setNumTeams] = useState(teams.length); //for rerendering i suppose
@@ -66,6 +59,18 @@ export function Home(){
                 }
             }
             fetchTeams();
+            const fetchLeagues = async() => {
+                {
+                    const url = `http://localhost:8800/leagues/student/${sid}`
+                    //change to student league query
+                    const result = await fetch(url);
+                    result.json().then(json => {
+                        updateLeagues(json)
+                    })
+                }
+            }
+            fetchLeagues();
+
 
         if(joinAttempt){
             const fetchTeam = async() => {
@@ -102,10 +107,13 @@ export function Home(){
                 fetchTeam();
             }
         }
-        setJoinAttempt(false);}
+        setJoinAttempt(false);
         return()=>{
             effectRan.current = true;
         }
+    
+    }
+        
     }, [joinAttempt])
 
 
@@ -123,8 +131,8 @@ export function Home(){
                 
                 <TeamTable teams={teams}></TeamTable>
 
-                <div className="join-team-cont">
-                    <div id="join-top">
+                <div className="home-sub-cont">
+                    <div id="home-sub-top">
                         <label> <h3> Join new team 
                         {joinShow && <FontAwesomeIcon id="toggle-join" icon={faCircleChevronUp} onClick={()=>{setJoinShow(!joinShow)}} />}
                         {!joinShow && <FontAwesomeIcon id="toggle-join" icon={faCircleChevronDown} onClick={()=>{setJoinShow(!joinShow)}} />}
@@ -150,6 +158,23 @@ export function Home(){
                 </>
                 }
                 </div>
+
+
+                <div className="home-sub-cont">
+                    <div id="home-sub-top">
+                        <label> <h3> View Leagues 
+                        {leagueShow && <FontAwesomeIcon id="toggle-join" icon={faCircleChevronUp} onClick={()=>{setLeagueShow(!leagueShow)}} />}
+                        {!leagueShow && <FontAwesomeIcon id="toggle-join" icon={faCircleChevronDown} onClick={()=>{setLeagueShow(!leagueShow)}} />}
+                            </h3> 
+                        </label>
+                        
+                    </div>
+
+                    {leagueShow &&
+                    <LeagueTable leagues={leagues}></LeagueTable>
+                }
+                </div>
+
 
             </div>
 
@@ -219,4 +244,83 @@ const TeamTableEntry = ({teamObj}) => {
 
 TeamTableEntry.propTypes = {
     teamObj:PropTypes.object
+}
+
+const LeagueTable = ({leagues}) => {
+    const indices = [...Array(leagues.length).keys()]
+    return(
+
+            <div className="team-table">
+                {indices.map((e) => {
+                        return <LeagueTableEntry key={e} leagueObj={leagues.at(e)}></LeagueTableEntry>
+                    })}
+            </div>
+
+    )
+}
+
+LeagueTable.propTypes = {
+    leagues: PropTypes.array
+}
+
+const LeagueTableEntry = ({leagueObj}) => {
+    const sport = leagueObj.sport;
+    const numTeams = leagueObj.numTeams;
+    const maxTeams = leagueObj.maxTeams;
+    const maxPlayers = leagueObj.maxPlayers;
+    const gender = leagueObj.genders;
+    const level = leagueObj.skillLevel;
+
+    const updateID = useCurrLeagueStore(useShallow((state) => state.updateID));
+    const updateNumTeams = useCurrLeagueStore(useShallow((state) => state.updateNumTeams));
+    const updateMaxTeams = useCurrLeagueStore(useShallow((state) => state.updateMaxTeams));
+    const updateSport = useCurrLeagueStore(useShallow((state) => state.updateSport));
+    const updateMaxPlayers = useCurrLeagueStore(useShallow((state) => state.updateMaxPlayers));
+    const updateGenders = useCurrLeagueStore(useShallow((state) => state.updateGenders));
+    const updateLevel = useCurrLeagueStore(useShallow((state) => state.updateLevel));
+
+    const navigate = useNavigate()
+
+
+    let sportIcon = null;
+    switch(sport){
+        case "Soccer":
+            sportIcon = <FontAwesomeIcon icon={faFutbol}> </FontAwesomeIcon>
+            break;
+        case "Basketball":
+            sportIcon = <FontAwesomeIcon icon={faBasketball}></FontAwesomeIcon>
+            break;
+        case "Volleyball":
+            sportIcon = <FontAwesomeIcon icon={faVolleyball}></FontAwesomeIcon>
+            break;
+        default:
+            sportIcon = <FontAwesomeIcon icon={faPersonRunning} />;
+            break;
+        }
+
+    function handleClick(){
+        updateID(leagueObj.leagueID);
+        updateLevel(level)
+        updateGenders(gender)
+        updateSport(sport)
+        updateMaxPlayers(maxPlayers)
+        updateNumTeams(numTeams)
+        updateMaxTeams(maxTeams)
+        navigate('/createteam')
+    }
+    return(
+        <div className="team-entry">
+            <div className="team-info">
+                <h3 className="team-name"> {sportIcon} {gender} {sport} </h3>
+                <h5>Level {level} </h5>
+                <p className="team-league-info">Max players: {maxPlayers}, {numTeams}/{maxTeams} teams</p>
+            </div>
+            <button onClick={handleClick}>Create Team</button>
+        </div>
+    )
+    
+}
+
+LeagueTableEntry.propTypes = {
+    leagueObj: PropTypes.object
 }

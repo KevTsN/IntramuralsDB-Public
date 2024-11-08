@@ -6,12 +6,17 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-import {leagues, playerByID, players, 
+import {leagues, availableLeagues,playerByID, players, 
     studentByID, students, studentTeams, checkLogin, 
     teamByID, teams,
     registerStudent,
-    studentJoinTeam, studentLeaveTeam} from "./src/routes.js"
-
+    studentJoinTeam, studentLeaveTeam,
+    createTeam} from "./src/routes.js"
+    
+  app.post("/students", registerStudent);
+  app.post("/teams", createTeam)
+  app.post("/players", studentJoinTeam);
+  app.delete("/players", studentLeaveTeam);
   app.get("/players", players);
   app.get("/leagues", leagues);
   app.get("/teams", teams)
@@ -22,14 +27,11 @@ import {leagues, playerByID, players,
   app.get("/teams/:id",teamByID)
 
   app.get("/teams/student/:id", studentTeams);
+  app.get("/leagues/student/:id", availableLeagues);
+
 
   app.get("/students/:id/&password=:password", checkLogin);
-  app.post("/students", registerStudent);
-
-  app.post("/players", studentJoinTeam);
-  app.delete("/players", studentLeaveTeam);
-
-
+  
 app.listen(8800, () => {
     console.log("Connected to backend.");
   });

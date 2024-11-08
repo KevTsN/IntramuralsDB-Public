@@ -210,7 +210,7 @@ body {
   @apply w-4/5 flex flex-col items-start;
 }
 
-.join-team-cont{
+.home-sub-cont{
   @apply flex flex-wrap flex-col w-4/5 m-auto border-white rounded-md border-4 p-2;
   margin-top: 10px !important;
 }
@@ -220,7 +220,7 @@ body {
 
 }
 
-#join-top{
+.home-sub-top{
   @apply flex flex-wrap flex-row justify-between items-start mr-auto my-1;
 }
 
@@ -228,6 +228,10 @@ body {
 #toggle-join{
   @apply ml-2
 }
+
+
+
+
 /* logging out */
 #logout-cont{
   @apply flex flex-wrap flex-col m-auto items-center;

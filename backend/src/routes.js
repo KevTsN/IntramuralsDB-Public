@@ -94,12 +94,21 @@ export function teamByID(req, res) {
     LEFT JOIN table2 AS two
         ON (one.WeddingTable = two.WeddingTable AND one.TableSeat = two.TableSeat); */
 
-    const q = "SELECT one.*, three.sport, three.skillLevel, three.genders FROM teams AS one LEFT JOIN players AS two ON (one.teamID = two.teamID AND two.studentID = ?) LEFT JOIN leagues AS three ON (one.leagueID = three.leagueID)";
+    const q = `SELECT one.*, three.sport, three.skillLevel, three.genders FROM teams AS one INNER JOIN players AS two ON (one.teamID = two.teamID AND two.studentID = ${studentID}) LEFT JOIN leagues AS three ON (one.leagueID = three.leagueID)`;
   
-    db.query(q, [studentID], (err, data) => {
+    db.query(q, (err, data) => {
       if (err) return res.send(err);
       return res.json(data);
     })
+}
+
+export function availableLeagues(req,res){
+  const studentID = req.params.id;
+  const q = `SELECT DISTINCT leagues.* FROM players RIGHT JOIN teams ON (players.teamID = teams.teamID AND players.studentID = ${studentID}) INNER JOIN leagues ON (leagues.leagueID = teams.leagueID and leagues.numTeams < leagues.maxTeams) where studentID IS NULL;;`
+  db.query(q,  (err, data) => {
+    if (err) return res.send(err);
+    return res.json(data);
+  });
 }
 
 export function checkLogin(req,res){
@@ -112,6 +121,8 @@ export function checkLogin(req,res){
       if (err) return res.send(err);
       return res.json(data);
     });
+
+
   }
 
 export function registerStudent(req,res){
@@ -132,8 +143,34 @@ export function registerStudent(req,res){
       if (err) return res.send(err);
       return res.json(data);
     })
+
+ 
 }
 
+export function createTeam(req,res){
+
+  
+  const values = [
+    req.body.name,
+    req.body.teamID,
+    req.body.leagueID,
+    req.body.captainID,
+  ];
+
+  const q = `INSERT INTO teams (name, teamID, leagueID, captainSID)
+  values ("${values[0]}", ${values[1]}, ${values[2]}, ${values[3]})  WHERE NOT EXISTS (select * from teams where leagueID = ${values[2]} and name = ${values[0]})`;
+
+  db.query(q, (err, data) => {
+  })
+
+  const PlayerIDCalc = parseInt(`${values[3]}${values[2]}`)
+
+  q = `INSERT INTO players (studentID, teamID, playerID) values (${values[3]},${values[1]},${PlayerIDCalc})`
+  db.query(q, (err, data) => {
+      if (err) return res.send(err);
+      return res.json(data);
+    })
+}
 
 export function studentJoinTeam(req,res){
     
@@ -203,3 +240,4 @@ export function studentLeaveTeam(req,res){
         return res.json(data);
       })
 }
+

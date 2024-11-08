@@ -4,15 +4,16 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faFaceFrown } from '@fortawesome/free-solid-svg-icons'
 import { useNavigate } from "react-router-dom"
 import { useStudentStore } from "../Stores"
+import { useShallow } from 'zustand/react/shallow'
 
 export function LogOut(){
 
-    const updateID = useStudentStore((state) => state.updateID)
-    const updateGender = useStudentStore((state) => state.updateGender)
-    const updateFirst = useStudentStore((state) => state.updateFirst)
-    const updateLast = useStudentStore((state) => state.updateLast)
-
-
+    const updateID = useStudentStore(useShallow((state) => state.updateID))
+    const updateGender = useStudentStore(useShallow((state) => state.updateGender))
+    const updateFirst = useStudentStore(useShallow((state) => state.updateFirst))
+    const updateLast = useStudentStore(useShallow((state) => state.updateLast))
+    const updateLeagues = useStudentStore(useShallow((state) => state.updateLeagues))
+    const updateTeams = useStudentStore(useShallow((state) => state.updateTeams))
 
     const navigate = useNavigate()
     const effectRan = useRef(false)
@@ -22,6 +23,8 @@ export function LogOut(){
             updateFirst('')
             updateLast('')
             updateID(0)
+            updateTeams([])
+            updateLeagues([])
             localStorage.removeItem("fullName")
             setTimeout(() => {
                 navigate('/')

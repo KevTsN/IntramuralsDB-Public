@@ -4,6 +4,7 @@ import {Register} from './components/Register.jsx'
 import {Home} from './components/Home.jsx'
 import { LogOut } from './components/LogOut.jsx';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
+import { TeamCreation } from './components/TeamCreation.jsx';
 
 function App() {
   return(
@@ -14,6 +15,7 @@ function App() {
       <Route path = "/register" element={<Register/>}></Route>
       <Route path="/home" element={<Home/>}></Route>
       <Route path="/logout" element={<LogOut/>}></Route>
+      <Route path="/createteam" element={<TeamCreation/>}></Route>
 
       </Routes>
 
