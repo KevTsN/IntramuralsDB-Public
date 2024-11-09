@@ -104,7 +104,7 @@ export function teamByID(req, res) {
 
 export function availableLeagues(req,res){
   const studentID = req.params.id;
-  const q = `SELECT DISTINCT leagues.* FROM players RIGHT JOIN teams ON (players.teamID = teams.teamID AND players.studentID = ${studentID}) INNER JOIN leagues ON (leagues.leagueID = teams.leagueID and leagues.numTeams < leagues.maxTeams) where studentID IS NULL;;`
+  const q = `SELECT DISTINCT leagues.* from players INNER JOIN teams ON (players.teamID = teams.teamID and players.studentID = ${studentID}) RIGHT JOIN leagues ON (leagues.leagueID = teams.leagueID) where studentID IS NULL and leagues.numTeams<leagues.maxTeams`
   db.query(q,  (err, data) => {
     if (err) return res.send(err);
     return res.json(data);
@@ -156,24 +156,35 @@ export function createTeam(req,res){
     req.body.leagueID,
     req.body.captainID,
   ];
+  console.log(req.body.captainID)
+  var hj = false;
+  let q = `INSERT INTO teams (name, teamID, leagueID, captainSID)
+  values ("${values[0]}", ${values[1]}, ${values[2]}, ${values[3]})`;
 
-  const q = `INSERT INTO teams (name, teamID, leagueID, captainSID)
-  values ("${values[0]}", ${values[1]}, ${values[2]}, ${values[3]})  WHERE NOT EXISTS (select * from teams where leagueID = ${values[2]} and name = ${values[0]})`;
+  db.query(q, (err, data) => {
+    if(err){
+      console.log(err)
+      hj = true;
+    }
+  })
+  if(hj){
+    return null;
+  }
 
+  q = `UPDATE leagues set numTeams=numTeams+1 where leagueID=${values[2]}`
   db.query(q, (err, data) => {
   })
-
   const PlayerIDCalc = parseInt(`${values[3]}${values[2]}`)
-
+// insert into players what am i doin bruh
   q = `INSERT INTO players (studentID, teamID, playerID) values (${values[3]},${values[1]},${PlayerIDCalc})`
   db.query(q, (err, data) => {
+    console.log('hey')
       if (err) return res.send(err);
       return res.json(data);
     })
 }
 
 export function studentJoinTeam(req,res){
-    
     const values = [
         req.body.studentID,
         req.body.teamID,

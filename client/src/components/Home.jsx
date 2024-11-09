@@ -72,6 +72,7 @@ export function Home(){
             fetchLeagues();
 
 
+
         if(joinAttempt){
             const fetchTeam = async() => {
                 {
@@ -213,6 +214,8 @@ const TeamTableEntry = ({teamObj}) => {
     const gender = teamObj.genders;
     const level = teamObj.skillLevel;
 
+    const sid =useStudentStore((state)=>state.studentID)
+
 
     let sportIcon = null;
     switch(sport){
@@ -237,7 +240,8 @@ const TeamTableEntry = ({teamObj}) => {
                 <h5>Record: {wins} W {losses} L </h5>
                 <p className="team-league-info"> {gender} {sport}, Level {level}</p>
             </div>
-            <button>Leave Team</button>
+            {sid!=teamObj.captainID && <button>Leave Team</button>}
+            {sid==teamObj.captainID && <button>Edit Team</button>}
         </div>
     )
 }
@@ -278,6 +282,8 @@ const LeagueTableEntry = ({leagueObj}) => {
     const updateMaxPlayers = useCurrLeagueStore(useShallow((state) => state.updateMaxPlayers));
     const updateGenders = useCurrLeagueStore(useShallow((state) => state.updateGenders));
     const updateLevel = useCurrLeagueStore(useShallow((state) => state.updateLevel));
+
+
 
     const navigate = useNavigate()
 
