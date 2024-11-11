@@ -37,3 +37,18 @@ export const useCurrLeagueStore = create((set) => ({
 
 }))
 
+export const useCurrTeamStore = create((set) => ({
+  name: "",
+  teamID: 0,
+  leagueID: 0,
+  numPlayers: 0,
+  wins: 0,
+  losses: 0,
+  captainSID: 0,
+  updateName : (nv) => set(() => ({name: nv})),
+  updateTeamID : (nv) => set(() => ({teamID: nv})),
+  updateLeagueID : (nv) => set(() => ({leagueID: nv})),
+  updateNumPlayers : (nv) => set(() => ({numPlayers: nv})),
+  updateCaptainSID : (nv) => set(() => ({captainSID: nv})),
+}))
+

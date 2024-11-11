@@ -18,8 +18,7 @@ const navigate = useNavigate()
   const maxTeams=useCurrLeagueStore((state)=>state.maxTeams)
   const maxPlayers=useCurrLeagueStore((state)=>state.maxPlayers)
   const leagueID=useCurrLeagueStore((state)=>state.leagueID)
-  const captainID =useStudentStore((state)=>state.studentID)
-
+  const capID =useStudentStore((state)=>state.studentID)
 
   
   const [created, setCreated] = useState(false)
@@ -49,7 +48,8 @@ const navigate = useNavigate()
         const response = await fetch("http://localhost:8800/teams", {
             method: "POST",
             // 
-            body: JSON.stringify({ captainID: captainID,
+            body: JSON.stringify({ 
+                captainID: capID,
                 teamID: calcID,
                 leagueID: leagueID,
                 name: name,

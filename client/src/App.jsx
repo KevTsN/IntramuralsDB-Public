@@ -5,6 +5,7 @@ import {Home} from './components/Home.jsx'
 import { LogOut } from './components/LogOut.jsx';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
 import { TeamCreation } from './components/TeamCreation.jsx';
+import { TeamEdit } from './components/TeamEdit.jsx';
 
 function App() {
   return(
@@ -16,6 +17,8 @@ function App() {
       <Route path="/home" element={<Home/>}></Route>
       <Route path="/logout" element={<LogOut/>}></Route>
       <Route path="/createteam" element={<TeamCreation/>}></Route>
+      <Route path="/teamedit" element={<TeamEdit/>}></Route>
+
 
       </Routes>
 

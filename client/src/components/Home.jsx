@@ -4,7 +4,7 @@ import {faVolleyball, faBasketball, faFutbol, faPersonRunning,
     faCircleChevronDown, faCircleChevronUp
 } from '@fortawesome/free-solid-svg-icons'
 import { useNavigate } from "react-router-dom"
-import { useStudentStore, useCurrLeagueStore } from "../Stores"
+import { useStudentStore, useCurrLeagueStore, useCurrTeamStore } from "../Stores"
 import {PropTypes} from 'prop-types'
 import { useShallow } from 'zustand/react/shallow'
 
@@ -207,6 +207,7 @@ TeamTable.propTypes = {
 }
 
 const TeamTableEntry = ({teamObj}) => {
+    const navigate = useNavigate();
     const name=teamObj.name;
     const sport = teamObj.sport;
     const wins = teamObj.wins;
@@ -215,7 +216,31 @@ const TeamTableEntry = ({teamObj}) => {
     const level = teamObj.skillLevel;
 
     const sid =useStudentStore((state)=>state.studentID)
+    const updateName = useCurrTeamStore(useShallow((state) => state.updateName));
+    const updateTeamID = useCurrTeamStore(useShallow((state) => state.updateTeamID));
+    const updateLeagueID = useCurrTeamStore(useShallow((state) => state.updateLeagueID));
+    const updateNumPlayers = useCurrTeamStore(useShallow((state) => state.updateNumPlayers));
+    const updateCaptainSID = useCurrTeamStore(useShallow((state) => state.updateCaptainSID));
+    const updateGenders = useCurrLeagueStore(useShallow((state) => state.updateGenders));
+    const updateSport = useCurrLeagueStore(useShallow((state) => state.updateSport));
+    const updateLevel = useCurrLeagueStore(useShallow((state) => state.updateLevel));
 
+
+    function handleEdit(){
+        updateName(teamObj.name);
+        updateTeamID(teamObj.teamID)
+        updateLeagueID(teamObj.leagueID)
+        updateNumPlayers(teamObj.numPlayers)
+        updateCaptainSID(teamObj.captainSID)
+        updateGenders(teamObj.genders)
+        updateSport(teamObj.sport)
+        updateLevel(teamObj.skillLevel)
+        navigate('/teamedit');
+    }
+
+    function handleLeave(){
+        //save for later because i gotta do the whole confirm changes shit
+    }
 
     let sportIcon = null;
     switch(sport){
@@ -240,8 +265,8 @@ const TeamTableEntry = ({teamObj}) => {
                 <h5>Record: {wins} W {losses} L </h5>
                 <p className="team-league-info"> {gender} {sport}, Level {level}</p>
             </div>
-            {sid!=teamObj.captainID && <button>Leave Team</button>}
-            {sid==teamObj.captainID && <button>Edit Team</button>}
+            {sid!=teamObj.captainSID && <button>Leave Team</button>}
+            {sid==teamObj.captainSID && <button onClick={handleEdit}>Edit Team</button>}
         </div>
     )
 }

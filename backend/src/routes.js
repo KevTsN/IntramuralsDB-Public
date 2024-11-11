@@ -156,7 +156,7 @@ export function createTeam(req,res){
     req.body.leagueID,
     req.body.captainID,
   ];
-  console.log(req.body.captainID)
+  console.log(values[3])
   var hj = false;
   let q = `INSERT INTO teams (name, teamID, leagueID, captainSID)
   values ("${values[0]}", ${values[1]}, ${values[2]}, ${values[3]})`;
@@ -174,13 +174,13 @@ export function createTeam(req,res){
   q = `UPDATE leagues set numTeams=numTeams+1 where leagueID=${values[2]}`
   db.query(q, (err, data) => {
   })
-  const PlayerIDCalc = parseInt(`${values[3]}${values[2]}`)
+  const PlayerIDCalc = parseInt(`${values[3]/6}${values[2]/6}`)
+  //divides both values by 6, regardless they would be the same, and be unique
+  console.log(PlayerIDCalc)
 // insert into players what am i doin bruh
-  q = `INSERT INTO players (studentID, teamID, playerID) values (${values[3]},${values[1]},${PlayerIDCalc})`
+  q = `INSERT INTO players (playerID, teamID, studentID) values (${PlayerIDCalc},${values[1]},${values[3]})`
   db.query(q, (err, data) => {
-    console.log('hey')
       if (err) return res.send(err);
-      return res.json(data);
     })
 }
 
@@ -190,12 +190,11 @@ export function studentJoinTeam(req,res){
         req.body.teamID,
     ]
     let leagueID = null;
-    let q = `SELECT leagueID from teams where teamID=${values[1]}`;
+    let q = `SELECT teams.leagueID from teams LEFT JOIN leagues on (teams.leagueID = leagues.leagueID) where teamID=${values[1]};`;
     db.query(q, (err,data) => {
         if(!err)
-            leagueID = res.json(data).leagueID;
+            leagueID = res.json(data)[0].leagueID;
     })
-
     // check if max or nah
     q = `SELECT numPlayers from teams LEFT JOIN leagues ON teams.leagueID = leagues.leagueID where teams.numPlayers>=leagues.maxPlayers where teams.teamID = ${values[1]};`
     db.query(q, (err,data)=>{
@@ -228,15 +227,15 @@ export function studentLeaveTeam(req,res){
         req.body.teamID,
     ]
     let leagueID = null;
-    let q = `SELECT leagueID from teams where teamID=${values[1]}`;
+    let q = `SELECT teams.leagueID from teams LEFT JOIN leagues on (teams.leagueID = leagues.leagueID) where teamID=${values[1]};`;
     db.query(q, (err,data) => {
         if(!err)
-            leagueID = res.json(data).leagueID;
+            leagueID = res.json(data)[0].leagueID;
     })
 
    
     console.log(leagueID)
-    const PlayerIDCalc = parseInt(`${values[0]}${leagueID}`)
+    const PlayerIDCalc = parseInt(`${values[0]/6}${leagueID/6}`)
     //meh
     q = `UPDATE teams set numPlayers = numPlayers - 1 where teamID=${values[1]}`
     db.query(q, (err, data) => {

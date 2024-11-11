@@ -37,7 +37,7 @@ export function LogIn() {
         return;
       }
     
-      if (!/^[0-9]{10,10}$/.test(number)) {
+      if (!/^[1-9][0-9]{8}$/.test(number)) {
         setStudentError('Please enter a valid student number')
         return
       }
