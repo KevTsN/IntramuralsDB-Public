@@ -29,7 +29,7 @@ const navigate = useNavigate()
     setCreated(false)
     setNameError('')
     if(!/^[a-zA-Z ]{4,30}$/.test(name)){
-        setNameError('Name must be be between 4 and 30 characters, with only letters and spaces.')
+        setNameError('Name must be between 4 and 30 characters, with only letters and spaces.')
         return;
     }
     setCreated(true)
@@ -39,8 +39,7 @@ const navigate = useNavigate()
     // if(effectRan.current == false){
 
     if(created){
-        console.log('yo')
-    const createTeam = async() => {
+        const createTeam = async() => {
         let calcID = Math.floor(Math.random() * 9999999) + 1000000;
         const myHeaders = new Headers();
         console.log(calcID)

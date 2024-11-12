@@ -11,7 +11,8 @@ import {leagues, availableLeagues,playerByID, players,
     teamByID, teams,
     registerStudent,
     studentJoinTeam, studentLeaveTeam,
-    createTeam} from "./src/routes.js"
+    createTeam,
+    studentsInTeam} from "./src/routes.js"
     
   app.post("/students", registerStudent);
   app.post("/teams", createTeam)
@@ -31,6 +32,8 @@ import {leagues, availableLeagues,playerByID, players,
 
 
   app.get("/students/:id/&password=:password", checkLogin);
+
+  app.get("/players/team/:id", studentsInTeam)
   
 app.listen(8800, () => {
     console.log("Connected to backend.");

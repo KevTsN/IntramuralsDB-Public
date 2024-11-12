@@ -111,6 +111,16 @@ export function availableLeagues(req,res){
   });
 }
 
+export function studentsInTeam(req,res){
+  const teamID = req.params.id;
+  const q =  `SELECT players.*, students.firstName, students.lastName, teams.captainSID, students.gender from players INNER JOIN teams ON (players.teamID = teams.teamID and players.studentID != teams.captainSID) LEFT JOIN students ON (players.studentID = students.studentID) where players.teamID=${teamID};`;
+  db.query(q, (err,data) => {
+    if(err) return res.send(err);
+
+    return res.json(data);
+  })
+}
+
 export function checkLogin(req,res){
 
     const id = req.params.id

@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from "react"
 import { useNavigate } from "react-router-dom"
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import {faOtter} from '@fortawesome/free-solid-svg-icons'
 import { useStudentStore, useCurrTeamStore, useCurrLeagueStore } from "../Stores"
 import { BackBtn } from "./Back"
 
@@ -7,121 +9,145 @@ export function TeamEdit() {
 
     const navigate = useNavigate()
 
-      const name=useCurrTeamStore((state)=>state.name)
-      const teamID=useCurrTeamStore((state)=>state.teamID)
-      const numPlayers=useCurrTeamStore((state)=>state.numPlayers)
-      const wins=useCurrTeamStore((state)=>state.wins)
-      const losses=useCurrTeamStore((state)=>state.losses)
+    const name=useCurrTeamStore((state)=>state.name)
+    const teamID=useCurrTeamStore((state)=>state.teamID)
+    const numPlayers=useCurrTeamStore((state)=>state.numPlayers)
+    const wins=useCurrTeamStore((state)=>state.wins)
+    const losses=useCurrTeamStore((state)=>state.losses)
 
-      const genders=useCurrLeagueStore((state)=>state.genders)
-      const sport=useCurrLeagueStore((state)=>state.sport)
-      const level=useCurrLeagueStore((state)=>state.skillLevel)
+    const genders=useCurrLeagueStore((state)=>state.genders)
+    const sport=useCurrLeagueStore((state)=>state.sport)
+    const level=useCurrLeagueStore((state)=>state.skillLevel)
+    const players=useCurrTeamStore((state)=>state.playersList)
 
-    
-      
-     
-      const effectRan = useRef(false)
-      const onEditClick = () => {
+    //selectCaptain
 
-      }
-      
-      useEffect(()=>{
-        // if(effectRan.current == false){
-    
-        if(created){
-            console.log('yo')
-        const createTeam = async() => {
-            let calcID = Math.floor(Math.random() * 9999999) + 1000000;
-            const myHeaders = new Headers();
-            console.log(calcID)
-            myHeaders.append("Content-Type", "application/json");
-            const response = await fetch("http://localhost:8800/teams", {
-                method: "POST",
-                // 
-                body: JSON.stringify({ 
-                    captainID: capID,
-                    teamID: calcID,
-                    leagueID: leagueID,
-                    name: name,
-                }),
-                headers: myHeaders,
-            });
-            if(!response.ok){
-                    setMessage("Something went wrong creating your team. Please try again.")
-                    setCreated(false)
-                    // effectRan.current = false;
-                }
-                else{
-                    setMessage("Your team was created.")
-                    // effectRan.current = true;
-                    navigate('/home')
-                }
-            } 
-            createTeam();
-        }
-    // }
-      })
-      function onBack() {
-        navigate('/home')
-      }
-    
-      //getrandomint, show league id, say to keep secret
-    
-        return(
-    
-            <div className="content" style={{alignItems: "center", width: "85%", marginTop: "20px"}}>
-    
-                <div id="regista">
-                    {/* <a className="fake-ref" href="">
-                        <div className="back-button" onClick={onBack}>
-                            <FontAwesomeIcon style={{marginRight: "5px"}}icon={faBackward} />
-                            <h2> Back </h2>
-                        </div>
-                    </a> */}
-                    <BackBtn innerRef={onBack}></BackBtn>
-                   
-    
-                    <h1>Carleton University</h1>
-                    <h1>Intramurals</h1>
-                    <h2> Team Creation </h2>
-                    
-                    <div id="register">
-                    <div className = "input-container">
-                            <label> <h3> Team Name </h3> </label>
-                            <input
-                            value={name}
-                            placeholder="Enter your team's name"
-                            onChange={(ev) => setName(ev.target.value)}
-                            className="input-box"
-                            />
-                            <label>{nameError}</label>
-    
-                        </div>
-    
-                        <div className = "input-container">
-                            <label> <h3> Sport</h3> </label>
-                            <h5>{genders} {sport}</h5>
-                            <h4> Level {level} </h4>
-                        </div>
-                        <div className = "input-container">
-                            <label> <h3> More Info</h3> </label>                        
-                            <h6> Max players allowed on your team: {maxPlayers}</h6>
-                            <p>There will be {maxTeams-numTeams-1} team spots left in this league after you submit.</p>
-                        </div>
-    
-                    <br/>      
-    
-    
-                    <br/>
-                   {<div className={'input-container'}>
-                        <input className={'input-button'} style={{width:"50%", margin: "auto"}} type="button" onClick={onCreateClick} value={'Create Team'} />
-                    </div>}
-                    <label>{createdMessage}</label>
-                    
-                </div>
-             </div>
-    
-    
-         </div>
-        )
+    const [changesMessage, setMessage] = useState('')
+    const [changeClicked, setChange] = useState(false)
+    const [nameError, setNameError] = useState('')
+
+    const effectRan = useRef(false)
+    const onChangeClick = () => {
+    setChange(false)
+    setNameError('')
+    if(!/^[a-zA-Z ]{4,30}$/.test(name)){
+        setNameError('Name must be between 4 and 30 characters, with only letters and spaces.')
+        return;
     }
+
+    setChange(true)
+    }
+    
+    useEffect(()=>{
+    // if(effectRan.current == false){
+    if(changeClicked){
+        //fetch update team
+    }
+        }
+    )
+    function onBack() {
+    navigate('/home')
+    }
+
+    //getrandomint, show league id, say to keep secret
+
+    return(
+
+        <div className="content" style={{alignItems: "center", width: "85%", marginTop: "20px"}}>
+
+            <div id="regista">
+                {/* <a className="fake-ref" href="">
+                    <div className="back-button" onClick={onBack}>
+                        <FontAwesomeIcon style={{marginRight: "5px"}}icon={faBackward} />
+                        <h2> Back </h2>
+                    </div>
+                </a> */}
+                <BackBtn innerRef={onBack}></BackBtn>
+                
+
+                <h1>Carleton University</h1>
+                <h1>Intramurals</h1>
+                <h2> Team Edit </h2>
+                
+                <div id="register">
+                <div className = "input-container">
+                        <label> <h3> Team Name </h3> </label>
+                        <label>{name}</label>
+                        <input
+                        // value={name}
+                        placeholder="Enter your team's new name"
+                        onChange={(ev) => setName(ev.target.value)}
+                        className="input-box"
+                        />
+                        <label>{nameError}</label>
+
+                    </div>
+
+                    <div className = "input-container">
+                        <label> <h3> Sport</h3> </label>
+                        <h5>{genders} {sport}</h5>
+                        <h4> Level {level} </h4>
+                    </div>
+
+                    <div className = "input-container">
+                        <label> <h3> Your Team ID</h3> </label>
+                        <h5> <FontAwesomeIcon icon={faOtter} /> {teamID}</h5>
+                        <h4> Keep this ID safe, as you may need to provide it to any new members who want to join. </h4>
+                    </div>
+
+                    <div className = "input-container">
+                        <label> <h3> Players</h3> </label>
+                        <h5> Select a player below to change them to captain when changes are saved</h5>
+                    </div>
+                    
+
+                <br/>      
+
+
+                <br/>
+                {<div className={'input-container'}>
+                    <input className={'input-button'} style={{width:"50%", margin: "auto"}} type="button" onClick={onChangeClick} value={'Save Changes'} />
+                </div>}
+                <label>{changesMessage}</label>
+                
+            </div>
+            </div>
+
+
+        </div>
+    )
+}
+
+const PlayerTable = ({players}) =>{
+    const indices = [...Array(teams.length).keys()]
+    return(
+            <div className="team-table">
+                {indices.map((e) => {
+                        return <PlayerTableEntry key={e} playerObj={players.at(e)}></PlayerTableEntry>
+                    })}
+            </div>
+
+    )
+}
+
+const PlayerTableEntry = ({playerObj}) => {
+    const studentID = playerObj.studentID;
+    const teamID = playerObj.teamID;
+    const gender = playerObj.gender;
+    const first = playerObj.firstName;
+    const last = playerObj.lastName;
+
+    function handleClick(){
+
+    }
+    return(
+        <div className="team-entry">
+            <div className="team-info">
+                <h3> {first} {last} </h3>
+                <h5>Gender: {gender} </h5>
+            </div>
+            <button onClick={handleClick}>Select</button>
+        </div>
+    )
+
+}

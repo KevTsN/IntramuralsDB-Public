@@ -75,7 +75,6 @@ export function Home(){
 
         if(joinAttempt){
             const fetchTeam = async() => {
-                {
                     const url = `http://localhost:8800/teams/${newTeamID}`
                     const result = await fetch(url);
                     result.json().then(json => {
@@ -104,16 +103,15 @@ export function Home(){
                             setTeamIdError('No team exists with this ID.')
                         }
                     })
-                }
-                fetchTeam();
             }
+            fetchTeam();
         }
         setJoinAttempt(false);
         return()=>{
             effectRan.current = true;
         }
     
-    }
+        }
         
     }, [joinAttempt])
 
@@ -216,16 +214,19 @@ const TeamTableEntry = ({teamObj}) => {
     const level = teamObj.skillLevel;
 
     const sid =useStudentStore((state)=>state.studentID)
+
     const updateName = useCurrTeamStore(useShallow((state) => state.updateName));
     const updateTeamID = useCurrTeamStore(useShallow((state) => state.updateTeamID));
     const updateLeagueID = useCurrTeamStore(useShallow((state) => state.updateLeagueID));
     const updateNumPlayers = useCurrTeamStore(useShallow((state) => state.updateNumPlayers));
     const updateCaptainSID = useCurrTeamStore(useShallow((state) => state.updateCaptainSID));
     const updateGenders = useCurrLeagueStore(useShallow((state) => state.updateGenders));
+
     const updateSport = useCurrLeagueStore(useShallow((state) => state.updateSport));
     const updateLevel = useCurrLeagueStore(useShallow((state) => state.updateLevel));
+    const updatePlayers = useCurrTeamStore(useShallow((state)=> state.updatePlayers));
 
-
+    const [editClicked, setEditClicked] = useState(false)
     function handleEdit(){
         updateName(teamObj.name);
         updateTeamID(teamObj.teamID)
@@ -235,7 +236,8 @@ const TeamTableEntry = ({teamObj}) => {
         updateGenders(teamObj.genders)
         updateSport(teamObj.sport)
         updateLevel(teamObj.skillLevel)
-        navigate('/teamedit');
+        setEditClicked(true);
+        //navigate('/teamedit');
     }
 
     function handleLeave(){
@@ -257,6 +259,22 @@ const TeamTableEntry = ({teamObj}) => {
             sportIcon = <FontAwesomeIcon icon={faPersonRunning} />;
             break;
         }
+
+    useEffect(()=>{
+        if(editClicked){
+            const fetchPlayers = async() => {
+                {
+                    const response = await fetch(`http://localhost:8800/players/team/${teamObj.teamID}`)
+                    result.json().then(json => {
+                            let gg = new Set(json)
+                            updatePlayers(gg);
+                        })
+                    }
+                fetchPlayers();
+        }
+        navigate('/teamedit');
+        }
+    })
 
     return(
         <div className="team-entry">
