@@ -28,6 +28,8 @@ export function LogIn() {
 
 
   const onLoginClick = () => {
+    setAttempted(false)
+
     setMessage('')
     setStudentError('')
     setPasswordError('')
@@ -95,6 +97,7 @@ export function LogIn() {
             fetchUser();
             
         }
+        setAttempted(false);
 
   })
 

@@ -4,6 +4,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {faOtter} from '@fortawesome/free-solid-svg-icons'
 import { useStudentStore, useCurrTeamStore, useCurrLeagueStore } from "../Stores"
 import { BackBtn } from "./Back"
+import { useShallow } from 'zustand/react/shallow'
+import {PropTypes} from 'prop-types'
 
 export function TeamEdit() {
 
@@ -19,6 +21,7 @@ export function TeamEdit() {
     const sport=useCurrLeagueStore((state)=>state.sport)
     const level=useCurrLeagueStore((state)=>state.skillLevel)
     const players=useCurrTeamStore((state)=>state.playersList)
+    const updatePlayers = useCurrTeamStore(useShallow((state)=> state.updatePlayers));
 
     //selectCaptain
 
@@ -39,14 +42,29 @@ export function TeamEdit() {
     }
     
     useEffect(()=>{
-    // if(effectRan.current == false){
-    if(changeClicked){
-        //fetch update team
-    }
+
+        if(effectRan.current == false){
+
+            console.log(teamID)
+            const fetchPlayers = async() => {
+                    const result = await fetch(`http://localhost:8800/players/team/${teamID}`)
+                    result.json().then(json => {
+                        console.log(json)
+                            updatePlayers(json);
+                        })
+                    }
+            fetchPlayers();
+            return() => {
+                effectRan.current = true;
+            }
         }
-    )
+        if(changeClicked){
+            //fetch update team
+        }
+    })
+        
     function onBack() {
-    navigate('/home')
+        navigate('/home')
     }
 
     //getrandomint, show league id, say to keep secret
@@ -91,13 +109,15 @@ export function TeamEdit() {
 
                     <div className = "input-container">
                         <label> <h3> Your Team ID</h3> </label>
-                        <h5> <FontAwesomeIcon icon={faOtter} /> {teamID}</h5>
+                        <h5 style={{fontWeight: "bold"}}> <FontAwesomeIcon icon={faOtter} /> {teamID}</h5>
                         <h4> Keep this ID safe, as you may need to provide it to any new members who want to join. </h4>
                     </div>
 
                     <div className = "input-container">
                         <label> <h3> Players</h3> </label>
                         <h5> Select a player below to change them to captain when changes are saved</h5>
+                        <PlayerTable players={players}></PlayerTable>
+
                     </div>
                     
 
@@ -119,7 +139,8 @@ export function TeamEdit() {
 }
 
 const PlayerTable = ({players}) =>{
-    const indices = [...Array(teams.length).keys()]
+
+    const indices = [...Array(players.length).keys()]
     return(
             <div className="team-table">
                 {indices.map((e) => {
@@ -128,6 +149,9 @@ const PlayerTable = ({players}) =>{
             </div>
 
     )
+}
+PlayerTable.propTypes = {
+    players: PropTypes.array
 }
 
 const PlayerTableEntry = ({playerObj}) => {
@@ -146,8 +170,12 @@ const PlayerTableEntry = ({playerObj}) => {
                 <h3> {first} {last} </h3>
                 <h5>Gender: {gender} </h5>
             </div>
-            <button onClick={handleClick}>Select</button>
+            <button onClick={handleClick} style={{padding:"0.3em"}}>Make Captain</button>
         </div>
     )
 
+}
+
+PlayerTableEntry.propTypes = {
+    playerObj: PropTypes.object
 }

@@ -35,7 +35,8 @@ export function Home(){
 
     const fullName = localStorage.getItem("fullName")
     const [joinAttempt, setJoinAttempt] = useState(false)
-    //effect ran!!!
+
+    console.log(teams)
 
     const effectRan = useRef(false)
 
@@ -44,7 +45,8 @@ export function Home(){
             setTeamIdError("Please enter a valid team ID.");
             return;
         }
-        setJoinAttempt(true)     
+        setJoinAttempt(true) 
+        effectRan.current = false;    
     }
     useEffect(()=>{
     
@@ -213,6 +215,7 @@ const TeamTableEntry = ({teamObj}) => {
     const gender = teamObj.genders;
     const level = teamObj.skillLevel;
 
+    const teamID=teamObj.teamID;
     const sid =useStudentStore((state)=>state.studentID)
 
     const updateName = useCurrTeamStore(useShallow((state) => state.updateName));
@@ -228,6 +231,7 @@ const TeamTableEntry = ({teamObj}) => {
 
     const [editClicked, setEditClicked] = useState(false)
     function handleEdit(){
+        setEditClicked(false)
         updateName(teamObj.name);
         updateTeamID(teamObj.teamID)
         updateLeagueID(teamObj.leagueID)
@@ -262,18 +266,18 @@ const TeamTableEntry = ({teamObj}) => {
 
     useEffect(()=>{
         if(editClicked){
+            console.log(teamID)
             const fetchPlayers = async() => {
-                {
-                    const response = await fetch(`http://localhost:8800/players/team/${teamObj.teamID}`)
+                    const result = await fetch(`http://localhost:8800/players/team/${teamID}`)
                     result.json().then(json => {
-                            let gg = new Set(json)
-                            updatePlayers(gg);
+                        console.log(json)
+                            updatePlayers(json);
                         })
                     }
                 fetchPlayers();
-        }
         navigate('/teamedit');
         }
+        setEditClicked(false);
     })
 
     return(
