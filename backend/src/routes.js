@@ -77,7 +77,7 @@ export function leagues(req, res) {
 
 export function teamByID(req, res) {
     const playerID = req.params.id;
-    const q = " SELECT * FROM students WHERE teamID = ? ";
+    const q = " SELECT * FROM teams WHERE teamID = ? ";
   
     db.query(q, [playerID], (err, data) => {
       if (err) return res.send(err);
@@ -89,10 +89,7 @@ export function teamByID(req, res) {
     const studentID = req.params.id;
     /*example from Anom on 
     https://stackoverflow.com/questions/13131496/how-to-do-join-on-multiple-criteria-returning-all-combinations-of-both-criteria
-    SELECT one.*, two.Meal
-    FROM table1 AS one
-    LEFT JOIN table2 AS two
-        ON (one.WeddingTable = two.WeddingTable AND one.TableSeat = two.TableSeat); */
+    */
 
     const q = `SELECT one.*, three.sport, three.skillLevel, three.genders FROM teams AS one INNER JOIN players AS two ON (one.teamID = two.teamID AND two.studentID = ${studentID}) LEFT JOIN leagues AS three ON (one.leagueID = three.leagueID)`;
   
@@ -184,80 +181,147 @@ export function createTeam(req,res){
   q = `UPDATE leagues set numTeams=numTeams+1 where leagueID=${values[2]}`
   db.query(q, (err, data) => {
   })
-  const PlayerIDCalc = parseInt(`${values[3]/6}${values[2]/6}`)
-  //divides both values by 6, regardless they would be the same, and be unique
-  console.log(PlayerIDCalc)
-// insert into players what am i doin bruh
+  let PlayerIDCalc = parseInt(`${values[0]}${leagueID}`)
+  PlayerIDCalc = Math.floor(PlayerIDCalc%1000000000);
   q = `INSERT INTO players (playerID, teamID, studentID) values (${PlayerIDCalc},${values[1]},${values[3]})`
   db.query(q, (err, data) => {
       if (err) return res.send(err);
     })
 }
 
-export function studentJoinTeam(req,res){
+async function getLeagueId(query){
+  const [rows,fields] = await db.promise().query(query);
+  return rows[0]['leagueID'];
+}
+
+async function isTeamFull(teamID){
+  //use a specific query ofc
+  let q = `SELECT numPlayers from teams LEFT JOIN leagues ON teams.leagueID = leagues.leagueID where teams.numPlayers>=leagues.maxPlayers and teams.teamID = ${teamID};`
+  const [rows,fields]=await db.promise().query(q);
+  let mbappe = rows.pop();
+    if(mbappe != null)
+      return true;
+    else{
+      return false;
+    }
+}
+
+async function willTeamEmpty(teamID){
+  let q = `SELECT numPlayers from teams where teamID=${teamID} and numPlayers = 1`;
+  const [rows,fields]=await db.promise().query(q);
+  let mbappe = rows.pop();
+    if(mbappe != null)
+      return true;
+}
+
+
+async function allowedGender(teamID, studentID){
+  let q = `SELECT leagues.genders, teams.teamID from leagues LEFT JOIN teams on (leagues.leagueID = teams.leagueID) where teams.teamID = ${teamID}`
+  await db.promise().query(q);
+  let leagueGenders = rows[0]['genders'];
+  q = `SELECT gender from students where studentID = ${studentID}`
+  await db.promise().query(q);
+  let studentGender = rows[0]['gender'];
+  console.log(`league: ${leagueGenders}, student: ${studentGender}`)
+  switch(leagueGenders){
+      case "Male":
+        if(studentGender != "M"){
+          return false;
+        }
+      case "Female":
+        if(studentGender != "F"){
+          return false;
+        }
+        //was this transphobic chat
+        //please delete this comment, future me.
+  }
+  return true;
+}
+
+async function canJoin(teamID, studentID){
+  if(isTeamFull(teamID)){
+    console.log("MAX AMOUNT OF PLAYERS REACHED IN THIS TEAM")
+    return false;
+  }
+  if(!allowedGender(teamID, studentID)){
+    console.log("Sorry, this player is not eligible to join this team due to their gender.");
+    return false;
+  }
+  return true;
+}
+
+export async function studentJoinTeam(req,res){
     const values = [
         req.body.studentID,
         req.body.teamID,
     ]
-    let leagueID = null;
     let q = `SELECT teams.leagueID from teams LEFT JOIN leagues on (teams.leagueID = leagues.leagueID) where teamID=${values[1]};`;
-    db.query(q, (err,data) => {
-        if(!err)
-            leagueID = res.json(data)[0].leagueID;
-    })
-    // check if max or nah
-    q = `SELECT numPlayers from teams LEFT JOIN leagues ON teams.leagueID = leagues.leagueID where teams.numPlayers>=leagues.maxPlayers where teams.teamID = ${values[1]};`
-    db.query(q, (err,data)=>{
-        console.log("max players reached for this team")
-        return null;
-    })
+    //dw, teamID is unique ;)
+    
+    let leagueID = await getLeagueId(q)
 
-    console.log(leagueID)
-    const PlayerIDCalc = parseInt(`${values[0]}${leagueID}`)
-    //meh
+    // check if max, and if eligible gender
+    if(!canJoin(values[1], values[0])){
+      return false;
+    }
+
+    let PlayerIDCalc = parseInt(`${values[0]}${leagueID}`)
+    PlayerIDCalc = Math.floor(PlayerIDCalc%1000000000);
+    //honestly i just did this bc my original thought was a humongous int lol
+    //kinda low chance that it still finds a dupe number lol
+    
     q = `UPDATE teams set numPlayers = numPlayers + 1 where teamID=${values[1]}`
-    db.query(q, (err, data) => {
-        if(data==[]){
-            return null;
-        }
-      })
+    db.query(q, (err, data) => {})
 
     q = `INSERT INTO players (studentID, teamID, playerID) values (${values[0]},${values[1]},${PlayerIDCalc})`
     db.query(q, (err, data) => {
+        console.log("rassclart")
         if (err) return res.send(err);
+        
         return res.json(data);
       })
+    return true;
 }
 
 
-export function studentLeaveTeam(req,res){
+export async function studentLeaveTeam(req,res){
     
     const values = [
         req.body.studentID,
         req.body.teamID,
     ]
-    let leagueID = null;
-    let q = `SELECT teams.leagueID from teams LEFT JOIN leagues on (teams.leagueID = leagues.leagueID) where teamID=${values[1]};`;
-    db.query(q, (err,data) => {
-        if(!err)
-            leagueID = res.json(data)[0].leagueID;
-    })
+    let leagueID = await getLeagueId(q);
 
    
     console.log(leagueID)
-    const PlayerIDCalc = parseInt(`${values[0]/6}${leagueID/6}`)
-    //meh
+    //will team be empty
+    let emp = willTeamEmpty(values[1]);
+    if(emp){
+      console.log(`The team with ID ${values[1]} will be deleted because there are no more players left.`)
+
+      q = `delete from teams where teamID=${values[1]}`;
+      db.query(q,(err,data)=>{
+        if (err) return res.send(err);
+      })
+    }
+
+
+    let PlayerIDCalc = parseInt(`${values[0]}${leagueID}`)
+    PlayerIDCalc = Math.floor(PlayerIDCalc%1000000000);
     q = `UPDATE teams set numPlayers = numPlayers - 1 where teamID=${values[1]}`
     db.query(q, (err, data) => {
-        if(data==[]){
-            return null;
+      if (err) return res.send(err);
         }
-      })
+    )
 
     q = `DELETE FROM players where playerID=${PlayerIDCalc}`
     db.query(q, (err, data) => {
         if (err) return res.send(err);
         return res.json(data);
       })
+
+    if(mbappe){
+      console.log("Team will be deleted because last member has lefted")
+    }
 }
 

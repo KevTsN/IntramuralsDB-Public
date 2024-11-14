@@ -210,6 +210,15 @@ body {
   @apply w-4/5 flex flex-col items-start;
 }
 
+.confirm-changes{
+  @apply w-full flex flex-col items-center;
+}
+#confirm-choices{
+  @apply mt-2 flex flex-row justify-evenly w-1/2;
+}
+#confirm-choices button{
+  @apply w-1/4;
+}
 .home-sub-cont{
   @apply flex flex-wrap flex-col w-4/5 m-auto border-white rounded-md border-4 p-2;
   margin-top: 10px !important;

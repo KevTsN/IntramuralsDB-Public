@@ -81,7 +81,12 @@ export function Home(){
                     const result = await fetch(url);
                     result.json().then(json => {
                         let jason = json[0]
+                        
                         if(jason){
+                            if(jason['maxPlayers'] <= jason['numPlayers']){
+                                setTeamIdError("This team has reached maximum capacity.")
+                                return;
+                            }
                             const joinTeam = async() => {
                                 const myHeaders = new Headers();
                                 myHeaders.append("Content-Type", "application/json");
@@ -108,6 +113,7 @@ export function Home(){
             }
             fetchTeam();
         }
+
         setJoinAttempt(false);
         return()=>{
             effectRan.current = true;
@@ -229,6 +235,8 @@ const TeamTableEntry = ({teamObj}) => {
     const updateLevel = useCurrLeagueStore(useShallow((state) => state.updateLevel));
     const updatePlayers = useCurrTeamStore(useShallow((state)=> state.updatePlayers));
 
+    const [confirmShow, setConfirmShow] = useState(false)
+
     const [editClicked, setEditClicked] = useState(false)
     function handleEdit(){
         setEditClicked(false)
@@ -244,8 +252,13 @@ const TeamTableEntry = ({teamObj}) => {
         //navigate('/teamedit');
     }
 
-    function handleLeave(){
+    function handleLeaveClick(){
         //save for later because i gotta do the whole confirm changes shit
+        setConfirmShow(true);
+    }
+
+    function handleConfirmLeave(){
+        
     }
 
     let sportIcon = null;
@@ -278,17 +291,32 @@ const TeamTableEntry = ({teamObj}) => {
         navigate('/teamedit');
         }
         setEditClicked(false);
+
+
     })
 
     return(
         <div className="team-entry">
-            <div className="team-info">
+            {confirmShow == false && <div className="team-info">
                 <h3 className="team-name"> {sportIcon} {name}  </h3>
                 <h5>Record: {wins} W {losses} L </h5>
                 <p className="team-league-info"> {gender} {sport}, Level {level}</p>
-            </div>
-            {sid!=teamObj.captainSID && <button>Leave Team</button>}
-            {sid==teamObj.captainSID && <button onClick={handleEdit}>Edit Team</button>}
+            </div>}
+            {confirmShow == false && sid!=teamObj.captainSID && <button onClick={handleLeaveClick}>Leave Team</button>}                
+            {confirmShow == false && sid==teamObj.captainSID && <button onClick={handleEdit}>Edit Team</button>}
+            {confirmShow == true &&
+                    <div className="confirm-changes">
+                        <div id="leave-team-name">
+                            <h3>Confirm that you want to leave the team:</h3>
+                            <h2>{name}</h2>
+                        </div>
+                        <div id="confirm-choices">
+                            <button onClick={handleConfirmLeave}>Yes</button>
+                            <button onClick={()=>{setConfirmShow(false)}}>No</button>
+                        </div>
+                    </div>
+                
+                }
         </div>
     )
 }
