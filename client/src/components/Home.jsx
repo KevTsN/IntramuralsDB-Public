@@ -103,7 +103,8 @@ export function Home(){
                                  });
                             } 
                             joinTeam();
-                            setTeamIdError("Joining new team.")
+                            //setTeamIdError("Joining new team.")
+                            setTeamIdError("If team list doesn't update, an error occured.")
                             navigate()
                         }
                         else{

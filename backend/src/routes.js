@@ -198,52 +198,75 @@ async function isTeamFull(teamID){
   //use a specific query ofc
   let q = `SELECT numPlayers from teams LEFT JOIN leagues ON teams.leagueID = leagues.leagueID where teams.numPlayers>=leagues.maxPlayers and teams.teamID = ${teamID};`
   const [rows,fields]=await db.promise().query(q);
+
+  if(rows.affectedRows < 1)
+    return false;
+
   let mbappe = rows.pop();
-    if(mbappe != null)
-      return true;
-    else{
-      return false;
-    }
+
+  if(mbappe !== undefined)
+    return true;
+  return false;
 }
 
 async function willTeamEmpty(teamID){
   let q = `SELECT numPlayers from teams where teamID=${teamID} and numPlayers = 1`;
   const [rows,fields]=await db.promise().query(q);
+
+  // if(rows.affectedRows < 1)
+  //   return false;
+
   let mbappe = rows.pop();
-    if(mbappe != null)
+
+    if(mbappe === undefined)
       return true;
+    return false;
 }
 
 
 async function allowedGender(teamID, studentID){
   let q = `SELECT leagues.genders, teams.teamID from leagues LEFT JOIN teams on (leagues.leagueID = teams.leagueID) where teams.teamID = ${teamID}`
-  await db.promise().query(q);
+  const [rows,fields] = await db.promise().query(q);
+
+  // if(rows.affectedRows < 1)
+  //   return false;
+
   let leagueGenders = rows[0]['genders'];
   q = `SELECT gender from students where studentID = ${studentID}`
-  await db.promise().query(q);
-  let studentGender = rows[0]['gender'];
-  console.log(`league: ${leagueGenders}, student: ${studentGender}`)
+  const [crows,seals] = await db.promise().query(q);
+
+  // if(crows.affectedRows < 1)
+  //   return false;
+
+  let studentGender = crows[0]['gender'];
+console.log(`league: ${leagueGenders}, student: ${studentGender}`)
+  let returnVal = true;
   switch(leagueGenders){
       case "Male":
         if(studentGender != "M"){
-          return false;
+          console.log("H-H-HELL NAH")
+          returnVal = false;
+          break;
         }
       case "Female":
         if(studentGender != "F"){
-          return false;
+          console.log("H-H-HELL NAH")
+          returnVal = false;
+          break;
         }
         //was this transphobic chat
         //please delete this comment, future me.
   }
-  return true;
+  return returnVal;
 }
 
 async function canJoin(teamID, studentID){
-  if(isTeamFull(teamID)){
+  console.log(studentID)
+  if(await isTeamFull(teamID) === true){
     console.log("MAX AMOUNT OF PLAYERS REACHED IN THIS TEAM")
     return false;
   }
-  if(!allowedGender(teamID, studentID)){
+  if(await allowedGender(teamID, studentID) === false){
     console.log("Sorry, this player is not eligible to join this team due to their gender.");
     return false;
   }
@@ -257,13 +280,13 @@ export async function studentJoinTeam(req,res){
     ]
     let q = `SELECT teams.leagueID from teams LEFT JOIN leagues on (teams.leagueID = leagues.leagueID) where teamID=${values[1]};`;
     //dw, teamID is unique ;)
-    
-    let leagueID = await getLeagueId(q)
 
     // check if max, and if eligible gender
-    if(!canJoin(values[1], values[0])){
+    if(await canJoin(values[1], values[0]) === false){
       return false;
     }
+
+    let leagueID = await getLeagueId(q)
 
     let PlayerIDCalc = parseInt(`${values[0]}${leagueID}`)
     PlayerIDCalc = Math.floor(PlayerIDCalc%1000000000);
@@ -275,7 +298,6 @@ export async function studentJoinTeam(req,res){
 
     q = `INSERT INTO players (studentID, teamID, playerID) values (${values[0]},${values[1]},${PlayerIDCalc})`
     db.query(q, (err, data) => {
-        console.log("rassclart")
         if (err) return res.send(err);
         
         return res.json(data);
@@ -290,12 +312,13 @@ export async function studentLeaveTeam(req,res){
         req.body.studentID,
         req.body.teamID,
     ]
-    let leagueID = await getLeagueId(q);
-
-   
+    
     console.log(leagueID)
     //will team be empty
     let emp = willTeamEmpty(values[1]);
+
+    let leagueID = await getLeagueId(q);
+
     if(emp){
       console.log(`The team with ID ${values[1]} will be deleted because there are no more players left.`)
 
