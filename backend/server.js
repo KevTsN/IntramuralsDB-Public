@@ -9,7 +9,7 @@ app.use(express.json());
 import {leagues, availableLeagues,playerByID, players, 
     studentByID, students, studentTeams, checkLogin, 
     teamByID, teams,
-    registerStudent,
+    registerStudent, updateTeam,
     studentJoinTeam, studentLeaveTeam,
     createTeam,
     studentsInTeam} from "./src/routes.js"
@@ -35,6 +35,8 @@ import {leagues, availableLeagues,playerByID, players,
 
   app.get("/players/team/:id", studentsInTeam)
   
-app.listen(8800, () => {
+  app.put("/teams/:id", updateTeam)
+  
+  app.listen(8800, () => {
     console.log("Connected to backend.");
   });

@@ -11,6 +11,9 @@ import { useShallow } from 'zustand/react/shallow'
 
 export function Home(){
 
+    const navigate = useNavigate()
+    
+
     const [confirmChanges, setConfirmChanges] = useState(false)
     const teams=useStudentStore((state)=>state.teams)
     const updateTeams = useStudentStore((state) => state.updateTeams)
@@ -20,7 +23,7 @@ export function Home(){
     const sid =useStudentStore((state)=>state.studentID)
 
 
-    const navigate = useNavigate()
+   
     function onLogOut() {
         navigate('/logout')
       }

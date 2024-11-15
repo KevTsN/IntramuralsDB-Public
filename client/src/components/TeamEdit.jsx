@@ -29,11 +29,15 @@ export function TeamEdit() {
     const [changeClicked, setChange] = useState(false)
     const [nameError, setNameError] = useState('')
 
+    const [newCaptain, setNewCap] = useState(0)
+    const [newName, setNewName] = useState("")
     const effectRan = useRef(false)
+
     const onChangeClick = () => {
+
     setChange(false)
     setNameError('')
-    if(!/^[a-zA-Z ]{4,30}$/.test(name)){
+    if(!/^[a-zA-Z ]{4,30}$/.test(newName)){
         setNameError('Name must be between 4 and 30 characters, with only letters and spaces.')
         return;
     }
@@ -42,7 +46,7 @@ export function TeamEdit() {
     }
     
     useEffect(()=>{
-
+        console.log(changeClicked)
         if(effectRan.current == false){
 
             console.log(teamID)
@@ -54,12 +58,32 @@ export function TeamEdit() {
                         })
                     }
             fetchPlayers();
-            return() => {
-                effectRan.current = true;
+            
+            if(changeClicked == true){
+                const nc=useCurrTeamStore((state)=>state.newCapID)
+                const updateTeam = async() => {
+                    const response = await fetch(`http://localhost:8800/teams/:${teamID}`, {
+                        method: "PUT",
+                        body: JSON.stringify({ 
+                            teamID: teamID,
+                            captainID: nc,
+                            newName: newName,
+                        })
+                        });
+                        console.log(response)
+
+                    if(response.ok){
+                        window.location.reload();
+                    }
+                }
+                updateTeam(); 
+                //fetch update team
+            
             }
-        }
-        if(changeClicked){
-            //fetch update team
+            setChange(false);
+        return() => {
+            effectRan.current = true;
+            }
         }
     })
         
@@ -94,7 +118,7 @@ export function TeamEdit() {
                         <input
                         // value={name}
                         placeholder="Enter your team's new name"
-                        onChange={(ev) => setName(ev.target.value)}
+                        onChange={(ev) => setNewName(ev.target.value)}
                         className="input-box"
                         />
                         <label>{nameError}</label>
@@ -160,9 +184,10 @@ const PlayerTableEntry = ({playerObj}) => {
     const gender = playerObj.gender;
     const first = playerObj.firstName;
     const last = playerObj.lastName;
+    const newCap = useCurrTeamStore(useShallow((state)=>updateNewCap));
 
     function handleClick(){
-
+        newCap(studentID)
     }
     return(
         <div className="team-entry">

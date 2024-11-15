@@ -170,18 +170,14 @@ export function createTeam(req,res){
 
   db.query(q, (err, data) => {
     if(err){
-      console.log(err)
-      hj = true;
+      return res.send(err);
     }
   })
-  if(hj){
-    return null;
-  }
 
   q = `UPDATE leagues set numTeams=numTeams+1 where leagueID=${values[2]}`
   db.query(q, (err, data) => {
   })
-  let PlayerIDCalc = parseInt(`${values[0]}${leagueID}`)
+  let PlayerIDCalc = parseInt(`${values[3]}${values[2]}`)
   PlayerIDCalc = Math.floor(PlayerIDCalc%1000000000);
   q = `INSERT INTO players (playerID, teamID, studentID) values (${PlayerIDCalc},${values[1]},${values[3]})`
   db.query(q, (err, data) => {
@@ -239,34 +235,24 @@ async function allowedGender(teamID, studentID){
   //   return false;
 
   let studentGender = crows[0]['gender'];
-console.log(`league: ${leagueGenders}, student: ${studentGender}`)
+  //console.log(`league: ${leagueGenders}, student: ${studentGender}`)
   let returnVal = true;
   switch(leagueGenders){
       case "Male":
-        if(studentGender != "M"){
-          console.log("H-H-HELL NAH")
-          returnVal = false;
-          break;
-        }
+        return (studentGender == "M");
+        
       case "Female":
-        if(studentGender != "F"){
-          console.log("H-H-HELL NAH")
-          returnVal = false;
-          break;
-        }
-        //was this transphobic chat
-        //please delete this comment, future me.
+        return (studentGender == "F");
   }
-  return returnVal;
+  return true;
 }
 
 async function canJoin(teamID, studentID){
-  console.log(studentID)
-  if(await isTeamFull(teamID) === true){
+  if(await isTeamFull(teamID) == true){
     console.log("MAX AMOUNT OF PLAYERS REACHED IN THIS TEAM")
     return false;
   }
-  if(await allowedGender(teamID, studentID) === false){
+  if(await allowedGender(teamID, studentID) == false){
     console.log("Sorry, this player is not eligible to join this team due to their gender.");
     return false;
   }
@@ -346,5 +332,41 @@ export async function studentLeaveTeam(req,res){
     if(mbappe){
       console.log("Team will be deleted because last member has lefted")
     }
+}
+
+export async function checkLeagueForName(teamID, name){
+  let q = `select leagueID from teams where teamID=${teamID}`
+  let [rows,fields] = await db.promise().query(q);
+  let leagueId = rows.pop()['leagueID']
+  q = `select * from teams where leagueID=${leagueId} and name="${name}"`
+  [rows,fields] = await db.promise().query(q);
+
+  //returns if there is an existing row
+  return (rows.pop() !== undefined)
+
+}
+export async function updateTeam(req,res){
+  const bodyObj = {
+    teamID: req.body.teamID,
+    captainID: req.body.captainID,
+    newName: req.body.name,
+  }
+  if(await checkLeagueForName(bodyObj["teamID"], bodyObj["newName"]) == true){
+    return false;
+  }
+
+
+  
+  console.log(bodyObj)
+  let q = `UPDATE teams set name = "${bodyObj['newName']}" where teamID = ${bodyObj['teamID']}`
+  db.query(q, (err,data) =>{
+    if(err) return res.send(err);
+  })
+
+  q = `UPDATE teams set captainSID = ${bodyObj['captainID']} where teamID=${bodyObj['teamID']}`
+  db.query(q, (err,data) =>{
+    if(err) return res.send(err);
+  })
+  
 }
 

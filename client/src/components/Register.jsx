@@ -84,7 +84,7 @@ export function Register() {
       const fn = `${first} ${last}`
       const numberInt = parseInt(number)
       apiRegister(numberInt, password,gChar,first,last)
-      navigate('/')
+      navigate('/login')
   }
   
 

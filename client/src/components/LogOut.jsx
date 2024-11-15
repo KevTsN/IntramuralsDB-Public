@@ -26,6 +26,7 @@ export function LogOut(){
             updateTeams([])
             updateLeagues([])
             localStorage.removeItem("fullName")
+            sessionStorage.clear()
             setTimeout(() => {
                 navigate('/')
               }, "2000");

@@ -3,7 +3,8 @@ import { persist, createJSONStorage } from 'zustand/middleware'
 
 
 
-export const useStudentStore = create((set) => ({
+export const useStudentStore = create((
+  persist((set, get) =>({
     studentID: 0,
     gender: "",
     first: "",
@@ -18,9 +19,16 @@ export const useStudentStore = create((set) => ({
     updateTeams: (tms) => set(()=>({teams: tms})),
     updateLeagues: (lgs) => set(()=>({leagues: lgs}))
 
-  }))
+  }),
+  {
+    name: 'student-storage',
+    storage: createJSONStorage(() => sessionStorage),
+  },
+))
+)
 
-export const useCurrLeagueStore = create((set) => ({
+export const useCurrLeagueStore = create((
+  persist((set, get) =>({
     skillLevel: 0,
     numTeams: 0,
     sport: "",
@@ -35,10 +43,16 @@ export const useCurrLeagueStore = create((set) => ({
     updateMaxPlayers: (num) => set(() => ({ maxPlayers: num })),
     updateGenders: (gnd) => set(()=>({genders: gnd})),
     updateLevel: (lvl) => set(()=>({skillLevel: lvl}))
+  }),
+  {
+    name: 'league-storage',
+    storage: createJSONStorage(() => sessionStorage),
+  },
+))
+)
 
-}))
-
-export const useCurrTeamStore = create((set) => ({
+export const useCurrTeamStore = create((
+persist((set, get) =>({
   name: "",
   teamID: 0,
   leagueID: 0,
@@ -46,13 +60,19 @@ export const useCurrTeamStore = create((set) => ({
   wins: 0,
   losses: 0,
   captainSID: 0,
+  newCapID: 0,
   playersList: [],
   updateName : (nv) => set(() => ({name: nv})),
   updateTeamID : (nv) => set(() => ({teamID: nv})),
   updateLeagueID : (nv) => set(() => ({leagueID: nv})),
   updateNumPlayers : (nv) => set(() => ({numPlayers: nv})),
   updateCaptainSID : (nv) => set(() => ({captainSID: nv})),
-  updatePlayers: (na) => set(() => ({playersList: na}))
-  //players by teamid get
-}))
-
+  updatePlayers: (na) => set(() => ({playersList: na})),
+  updateNewCap: (nv) => set(() => ({newCapID: nv})) 
+}),
+{
+  name: 'league-storage',
+  storage: createJSONStorage(() => sessionStorage),
+},
+))
+)
