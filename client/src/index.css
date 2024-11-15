@@ -188,16 +188,23 @@ body {
   max-height: 514px;
 }
 
-.team-table{
+.tl-table{
   @apply flex flex-wrap w-full m-auto border-white rounded-md border-2;
   max-height: 422px;
   overflow-y: auto;
 }
 
-.team-entry{
-  @apply flex flex-wrap flex-row border-2 border-white m-1 p-2 justify-between items-center w-full;
+.tl-entry{
+  @apply flex flex-wrap flex-row border-2 border-white m-1 py-2 px-4 justify-between items-center w-full;
 }
 
+.tl-table button{
+  @apply w-32 px-5;
+}
+
+#player-entry button{
+  @apply w-28;
+}
 
 .team-league-info{
   font-style: italic;
@@ -206,8 +213,20 @@ body {
   color:grey;
 }
 
-.team-info{
+.tl-info{
   @apply w-4/5 flex flex-col items-start;
+}
+
+#captain-btn-cont{
+  @apply flex w-full flex-row justify-evenly items-center flex-wrap;
+}
+
+#captain-btn-cont button{
+  @apply border-2 bg-black text-white border-white;
+}
+
+#captain-btn-cont button:hover{
+  @apply bg-white bg-opacity-65 text-black border-red-600;
 }
 
 .confirm-changes{

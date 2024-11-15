@@ -39,7 +39,7 @@ export function Home(){
     const fullName = localStorage.getItem("fullName")
     const [joinAttempt, setJoinAttempt] = useState(false)
 
-    console.log(teams)
+    //console.log(teams)
 
     const effectRan = useRef(false)
 
@@ -107,8 +107,12 @@ export function Home(){
                             } 
                             joinTeam();
                             //setTeamIdError("Joining new team.")
-                            setTeamIdError("If team list doesn't update, an error occured.")
-                            navigate()
+                            // setTeamIdError("If team list doesn't update, an error occured.")
+                            setTimeout(() => {
+                                setTeamIdError("If team list doesn't update, an error occured.");
+                                window.location.reload();
+                              }, "5 seconds");
+                            
                         }
                         else{
                             setTeamIdError('No team exists with this ID.')
@@ -202,7 +206,7 @@ const TeamTable = ({teams}) =>{
         <div className="t-table-full">
 
             <h2 style={{textAlign: "left", marginBottom: "10px", width: "100%"}}> Manage Teams </h2>
-            <div className="team-table">
+            <div className="tl-table">
                 {indices.map((e) => {
                         return <TeamTableEntry key={e} teamObj={teams.at(e)}></TeamTableEntry>
                     })}
@@ -238,10 +242,13 @@ const TeamTableEntry = ({teamObj}) => {
     const updateSport = useCurrLeagueStore(useShallow((state) => state.updateSport));
     const updateLevel = useCurrLeagueStore(useShallow((state) => state.updateLevel));
     const updatePlayers = useCurrTeamStore(useShallow((state)=> state.updatePlayers));
+    
 
     const [confirmShow, setConfirmShow] = useState(false)
 
     const [editClicked, setEditClicked] = useState(false)
+    const leaveConfirm = useRef(false)
+
     function handleEdit(){
         setEditClicked(false)
         updateName(teamObj.name);
@@ -262,7 +269,7 @@ const TeamTableEntry = ({teamObj}) => {
     }
 
     function handleConfirmLeave(){
-        
+        leaveConfirm.current = true;
     }
 
     let sportIcon = null;
@@ -283,11 +290,13 @@ const TeamTableEntry = ({teamObj}) => {
 
     useEffect(()=>{
         if(editClicked){
-            console.log(teamID)
+            //console.log(teamID)
             const fetchPlayers = async() => {
-                    const result = await fetch(`http://localhost:8800/players/team/${teamID}`)
+                    const result = await fetch(`http://localhost:8800/players/team/${teamID}`, {
+                        
+                    })
                     result.json().then(json => {
-                        console.log(json)
+                        //console.log(json)
                             updatePlayers(json);
                         })
                     }
@@ -296,13 +305,32 @@ const TeamTableEntry = ({teamObj}) => {
         }
         setEditClicked(false);
 
+        if(leaveConfirm.current){
+            const leaveTeam = async() => {
+                const myHeaders = new Headers();
+                myHeaders.append("Content-Type", "application/json");
+
+                const response = await fetch("http://localhost:8800/players", {
+                method: "DELETE",
+                // 
+                body: JSON.stringify({ 
+                    studentID: sid,
+                    teamID: teamID,
+                }),
+
+                headers: myHeaders,
+                 });
+            } 
+            leaveTeam();
+            window.location.reload();
+        }
 
     })
 
     return(
-        <div className="team-entry">
-            {confirmShow == false && <div className="team-info">
-                <h3 className="team-name"> {sportIcon} {name}  </h3>
+        <div className="tl-entry"  id="team-entry">
+            {confirmShow == false && <div className="tl-info">
+                <h3 className="tl-name"> {sportIcon} {name}  </h3>
                 <h5>Record: {wins} W {losses} L </h5>
                 <p className="team-league-info"> {gender} {sport}, Level {level}</p>
             </div>}
@@ -310,7 +338,7 @@ const TeamTableEntry = ({teamObj}) => {
             {confirmShow == false && sid==teamObj.captainSID && <button onClick={handleEdit}>Edit Team</button>}
             {confirmShow == true &&
                     <div className="confirm-changes">
-                        <div id="leave-team-name">
+                        <div id="leave-tl-name">
                             <h3>Confirm that you want to leave the team:</h3>
                             <h2>{name}</h2>
                         </div>
@@ -333,7 +361,7 @@ const LeagueTable = ({leagues}) => {
     const indices = [...Array(leagues.length).keys()]
     return(
 
-            <div className="team-table">
+            <div className="tl-table">
                 {indices.map((e) => {
                         return <LeagueTableEntry key={e} leagueObj={leagues.at(e)}></LeagueTableEntry>
                     })}
@@ -362,7 +390,8 @@ const LeagueTableEntry = ({leagueObj}) => {
     const updateGenders = useCurrLeagueStore(useShallow((state) => state.updateGenders));
     const updateLevel = useCurrLeagueStore(useShallow((state) => state.updateLevel));
 
-
+    const stuGender=useStudentStore((state)=>state.gender)
+    const canJoinGender = useRef(true);
 
     const navigate = useNavigate()
 
@@ -383,6 +412,18 @@ const LeagueTableEntry = ({leagueObj}) => {
             break;
         }
 
+    switch(gender){
+        case "Male":
+            if(stuGender != "M")
+                canJoinGender.current = false;
+            break;
+        case "Female":
+            if(stuGender != "F")
+                canJoinGender.current = false;
+            break;
+    }
+
+
     function handleClick(){
         updateID(leagueObj.leagueID);
         updateLevel(level)
@@ -394,13 +435,13 @@ const LeagueTableEntry = ({leagueObj}) => {
         navigate('/createteam')
     }
     return(
-        <div className="team-entry">
-            <div className="team-info">
-                <h3 className="team-name"> {sportIcon} {gender} {sport} </h3>
+        <div className="tl-entry" id="league-entry">
+            <div className="tl-info">
+                <h3 className="tl-name"> {sportIcon} {gender} {sport} </h3>
                 <h5>Level {level} </h5>
                 <p className="team-league-info">Max players: {maxPlayers}, {numTeams}/{maxTeams} teams</p>
             </div>
-            <button onClick={handleClick}>Create Team</button>
+            {canJoinGender.current && <button onClick={handleClick}>Create Team</button>}
         </div>
     )
     

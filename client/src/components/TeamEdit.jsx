@@ -116,7 +116,7 @@ export function TeamEdit() {
                         <label> <h3> Team Name </h3> </label>
                         <label>{name}</label>
                         <input
-                        // value={name}
+                        defaultValue={name}
                         placeholder="Enter your team's new name"
                         onChange={(ev) => setNewName(ev.target.value)}
                         className="input-box"
@@ -145,7 +145,15 @@ export function TeamEdit() {
                     </div>
                     
 
-                <br/>      
+                <br/>   
+
+                <div className = "input-container">
+                    <div id="captain-btn-cont">
+                        <button>Delete Team</button>    
+                        <button>Leave Team</button>
+                    </div>
+                    
+                </div>   
 
 
                 <br/>
@@ -166,7 +174,7 @@ const PlayerTable = ({players}) =>{
 
     const indices = [...Array(players.length).keys()]
     return(
-            <div className="team-table">
+            <div className="tl-table">
                 {indices.map((e) => {
                         return <PlayerTableEntry key={e} playerObj={players.at(e)}></PlayerTableEntry>
                     })}
@@ -184,14 +192,16 @@ const PlayerTableEntry = ({playerObj}) => {
     const gender = playerObj.gender;
     const first = playerObj.firstName;
     const last = playerObj.lastName;
-    const newCap = useCurrTeamStore(useShallow((state)=>updateNewCap));
+    const newCap = useCurrTeamStore(useShallow((state)=>state.updateNewCap));
 
     function handleClick(){
         newCap(studentID)
+        console.log("New potential captain: " + studentID)
     }
+
     return(
-        <div className="team-entry">
-            <div className="team-info">
+        <div className="tl-entry" id="player-entry">
+            <div className="tl-info">
                 <h3> {first} {last} </h3>
                 <h5>Gender: {gender} </h5>
             </div>

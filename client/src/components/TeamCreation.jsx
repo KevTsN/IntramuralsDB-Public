@@ -55,6 +55,7 @@ const navigate = useNavigate()
             }),
             headers: myHeaders,
         });
+        console.log('wagwan')
         if(!response.ok){
                 setMessage("Something went wrong creating your team. Please try again.")
                 setCreated(false)

@@ -96,8 +96,8 @@ export function Register() {
         case "Female":
             setGender("Female");
             break;
-        case "Custom":
-            setGender("Custom");
+        case "Other":
+            setGender("Other");
             break;
               
     }
@@ -206,14 +206,14 @@ export function Register() {
                             </input>
                         </span>
                         <span className="gender-button" style={{display: 'flex'}}>
-                            Custom
-                            <input type="radio" className="gender-radio" name="gender" onClick={()=>onGenderClick("Custom")} value="Custom">
+                            Other
+                            <input type="radio" className="gender-radio" name="gender" onClick={()=>onGenderClick("Other")} value="Other">
                             </input>
                         </span>
 
                     </div>
 
-            {gender == "Custom" &&  
+            {gender == "Other" &&  
                     <div style={{width:"60%"}}>
                     
                         <div className = "input-container">
