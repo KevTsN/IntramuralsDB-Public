@@ -11,7 +11,7 @@ import {leagues, availableLeagues,playerByID, players,
     teamByID, teams,
     registerStudent, updateTeam,
     studentJoinTeam, studentLeaveTeam,
-    createTeam,
+    createTeam, teamsByLeague,
     studentsInTeam} from "./src/routes.js"
     
   app.post("/students", registerStudent);
@@ -22,7 +22,7 @@ import {leagues, availableLeagues,playerByID, players,
   app.get("/leagues", leagues);
   app.get("/teams", teams)
   app.get("/students", students)
-
+  app.get("/teams/league/:id", teamsByLeague)
   app.get("/players/:id", playerByID);
   app.get("/students/:id", studentByID);
   app.get("/teams/:id",teamByID)

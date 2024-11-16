@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react"
 import { useNavigate } from "react-router-dom"
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import {faOtter} from '@fortawesome/free-solid-svg-icons'
+import {faOtter, faFaceSadCry, faStar} from '@fortawesome/free-solid-svg-icons'
 import { useStudentStore, useCurrTeamStore, useCurrLeagueStore } from "../Stores"
 import { BackBtn } from "./Back"
 import { useShallow } from 'zustand/react/shallow'
@@ -139,8 +139,10 @@ export function TeamEdit() {
 
                     <div className = "input-container">
                         <label> <h3> Players</h3> </label>
-                        <h5> Select a player below to change them to captain when changes are saved</h5>
+                        <h5> Select a player below to change them to captain when changes are saved.</h5>
                         <PlayerTable players={players}></PlayerTable>
+                        <p style={{marginTop: "10px"}}>If you wish to leave this team, you must set another captain first then leave in home, or delete the team with only you in it.
+                        </p>
 
                     </div>
                     
@@ -150,7 +152,7 @@ export function TeamEdit() {
                 <div className = "input-container">
                     <div id="captain-btn-cont">
                         <button>Delete Team</button>    
-                        <button>Leave Team</button>
+                        
                     </div>
                     
                 </div>   
@@ -172,12 +174,25 @@ export function TeamEdit() {
 
 const PlayerTable = ({players}) =>{
 
+    const [highlighted, setHighlighted] = useState(-1)
     const indices = [...Array(players.length).keys()]
     return(
             <div className="tl-table">
                 {indices.map((e) => {
-                        return <PlayerTableEntry key={e} playerObj={players.at(e)}></PlayerTableEntry>
+
+                                if(highlighted == e)
+                                    return <PlayerTableEntry key={e} ind={e} highlighted={true}
+                                    stateChanger={setHighlighted} playerObj={players.at(e)}></PlayerTableEntry>
+                                else
+                                    return <PlayerTableEntry key={e} ind={e} highlighted={false} 
+                                    stateChanger={setHighlighted} playerObj={players.at(e)}></PlayerTableEntry>
+                                                    
                     })}
+                {indices.length == 0 &&
+                    <div className="tl-entry">
+                        <p>There are no other players in this team. <FontAwesomeIcon icon={faFaceSadCry} /></p>
+                    </div>
+                }
             </div>
 
     )
@@ -186,7 +201,7 @@ PlayerTable.propTypes = {
     players: PropTypes.array
 }
 
-const PlayerTableEntry = ({playerObj}) => {
+const PlayerTableEntry = ({playerObj, stateChanger, ind, highlighted}) => {
     const studentID = playerObj.studentID;
     const teamID = playerObj.teamID;
     const gender = playerObj.gender;
@@ -194,23 +209,43 @@ const PlayerTableEntry = ({playerObj}) => {
     const last = playerObj.lastName;
     const newCap = useCurrTeamStore(useShallow((state)=>state.updateNewCap));
 
+    let displayGender = ""
+    switch(gender){
+        case "M":
+            displayGender = "Male";
+            break;
+        case "F":
+            displayGender = "Female";
+            break;
+        default:
+            displayGender = "Other";
+            break; //lol
+    }
     function handleClick(){
         newCap(studentID)
+        if(highlighted)
+            stateChanger(-1)
+        else{
+            stateChanger(ind)
+        }
         console.log("New potential captain: " + studentID)
     }
 
     return(
         <div className="tl-entry" id="player-entry">
             <div className="tl-info">
-                <h3> {first} {last} </h3>
-                <h5>Gender: {gender} </h5>
+                <h3> {first} {last} {highlighted && <FontAwesomeIcon icon={faStar} />}</h3>
+                <h5>Gender: {displayGender} </h5>
             </div>
-            <button onClick={handleClick} style={{padding:"0.3em"}}>Make Captain</button>
+            <button onClick={handleClick} style={{padding:"0.3em"}}>Toggle Captain</button>
         </div>
     )
 
 }
 
 PlayerTableEntry.propTypes = {
-    playerObj: PropTypes.object
+    playerObj: PropTypes.object,
+    stateChanger: PropTypes.funct,
+    key: PropTypes.number,
+    highlighted: PropTypes.bool
 }

@@ -39,6 +39,22 @@ const navigate = useNavigate()
     // if(effectRan.current == false){
 
     if(created){
+
+        var nameInLeague = false;
+        const fetchPotentialError = async() =>{
+            const response = await fetch(`http://localhost:8800/teams/league/${leagueID}`);
+            response.json().then(json => {
+                json.forEach(team => {
+                    if(team.name == name)
+                    {
+                        setMessage("There is already a team in this league with this name.")
+                        nameInLeague = true; 
+                    }                
+                });
+            })
+        }
+        fetchPotentialError();
+
         const createTeam = async() => {
         let calcID = Math.floor(Math.random() * 9999999) + 1000000;
         const myHeaders = new Headers();
@@ -64,10 +80,13 @@ const navigate = useNavigate()
             else{
                 setMessage("Your team was created.")
                 // effectRan.current = true;
-                navigate('/home')
+                setTimeout(()=>{
+                    navigate('/home')}, "2 seconds")
             }
-        } 
-        createTeam();
+        }
+
+        if(!nameInLeague)
+            createTeam(); //if the name doesn't exist in the league, create
     }
 // }
   })

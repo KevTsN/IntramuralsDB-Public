@@ -18,6 +18,15 @@ export async function apiRegister(sid,pass,gen,fn,ln){
 });
 }
 
+export function canJoinGender(leagueGen, stuGen){
+    switch(leagueGen){
+        case "Male":
+            return stuGen == "M";
+        case "Female":
+            return stuGen == "M";
+    }
+    return true;
+}
 
 export async function getStudentTeams(sid){
     const url = `http://localhost:8800/teams/student/${sid}`

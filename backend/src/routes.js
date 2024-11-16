@@ -66,23 +66,33 @@ export function leagues(req, res) {
   }
 
  export function studentByID(req, res) {
-    const playerID = req.params.id;
+    const studentID = req.params.id;
     const q = " SELECT * FROM students WHERE studentID = ? ";
   
-    db.query(q, [playerID], (err, data) => {
+    db.query(q, [studentID], (err, data) => {
       if (err) return res.send(err);
       return res.json(data);
     })
 }
 
 export function teamByID(req, res) {
-    const playerID = req.params.id;
-    const q = " SELECT * FROM teams WHERE teamID = ? ";
+    const teamID = req.params.id;
+    const q = " SELECT teams.*, leagues.genders, leagues.maxPlayers from teams join leagues ON (teams.leagueID = leagues.leagueID) WHERE teamID = ? ";
   
-    db.query(q, [playerID], (err, data) => {
+    db.query(q, [teamID], (err, data) => {
       if (err) return res.send(err);
       return res.json(data);
     })
+}
+
+export function teamsByLeague(req, res) {
+  const leagueID = req.params.id;
+  const q = " SELECT * from teams WHERE leagueID = ? ";
+
+  db.query(q, [leagueID], (err, data) => {
+    if (err) return res.send(err);
+    return res.json(data);
+  })
 }
 
   export function studentTeams(req, res) {
@@ -321,10 +331,11 @@ export async function studentLeaveTeam(req,res){
         req.body.teamID,
     ]
     
+    console.log("HE HIT MY CAR ON THE HIGHWAY AND HE TRYNA LEAVE")
     //will team be empty
     let q = `SELECT teams.leagueID from teams LEFT JOIN leagues on (teams.leagueID = leagues.leagueID) where teamID=${values[1]}`;
     let leagueID = await getLeagueId(q);
-
+    console.log("League is " + leagueID)
 
     if(await willTeamEmpty(values[1]) == true){
       console.log(`The team with ID ${values[1]} will be deleted because there are no more players left.`)
@@ -338,6 +349,9 @@ export async function studentLeaveTeam(req,res){
         if (err) return res.send(err);
       })
 
+      q = `delete from players where teamID=${values[1]}`
+      db.query(q, (err,data)=>{        
+      })
     }
 
 

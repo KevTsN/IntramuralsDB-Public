@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom"
 import { useStudentStore, useCurrLeagueStore, useCurrTeamStore } from "../Stores"
 import {PropTypes} from 'prop-types'
 import { useShallow } from 'zustand/react/shallow'
+import { canJoinGender } from "../ApiFunctions"
 
 
 export function Home(){
@@ -19,6 +20,7 @@ export function Home(){
     const updateTeams = useStudentStore((state) => state.updateTeams)
     const leagues=useStudentStore((state)=>state.leagues)
     const updateLeagues = useStudentStore((state) => state.updateLeagues)
+    const stuGen=useStudentStore((state)=>state.gender)
 
     const sid =useStudentStore((state)=>state.studentID)
 
@@ -79,6 +81,7 @@ export function Home(){
 
 
         if(joinAttempt){
+            setTeamIdError("")
             const fetchTeam = async() => {
                     const url = `http://localhost:8800/teams/${newTeamID}`
                     const result = await fetch(url);
@@ -86,10 +89,24 @@ export function Home(){
                         let jason = json[0]
                         
                         if(jason){
+
                             if(jason['maxPlayers'] <= jason['numPlayers']){
                                 setTeamIdError("This team has reached maximum capacity.")
                                 return;
                             }
+                            if(canJoinGender(jason['genders'], stuGen) == false){
+                                setTeamIdError(`Gender restrictions prevent you from joining this team. The specified team gender is ${jason['genders'].toLowerCase()}.`)
+                                return;
+                            }
+
+                            teams.forEach(team => {
+                                if(team['teamID'] == newTeamID){
+                                    setTeamIdError(`You've already joined the team \"${team['name']}\".`)
+                                    return;
+                                }
+                            });
+
+
                             const joinTeam = async() => {
                                 const myHeaders = new Headers();
                                 myHeaders.append("Content-Type", "application/json");
@@ -104,14 +121,9 @@ export function Home(){
 
                                 headers: myHeaders,
                                  });
+                                 setNumTeams(numTeams+1)
                             } 
                             joinTeam();
-                            //setTeamIdError("Joining new team.")
-                            // setTeamIdError("If team list doesn't update, an error occured.")
-                            setTimeout(() => {
-                                setTeamIdError("If team list doesn't update, an error occured.");
-                                window.location.reload();
-                              }, "5 seconds");
                             
                         }
                         else{
@@ -306,6 +318,7 @@ const TeamTableEntry = ({teamObj}) => {
         setEditClicked(false);
 
         if(leaveConfirm.current){
+            //console.log("im tryna gooo")
             const leaveTeam = async() => {
                 const myHeaders = new Headers();
                 myHeaders.append("Content-Type", "application/json");
@@ -320,6 +333,7 @@ const TeamTableEntry = ({teamObj}) => {
 
                 headers: myHeaders,
                  });
+                 console.log('yo')
             } 
             leaveTeam();
             window.location.reload();
