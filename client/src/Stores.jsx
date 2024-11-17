@@ -71,7 +71,7 @@ persist((set, get) =>({
   updateNewCap: (nv) => set(() => ({newCapID: nv})) 
 }),
 {
-  name: 'league-storage',
+  name: 'team-storage',
   storage: createJSONStorage(() => sessionStorage),
 },
 ))

@@ -218,15 +218,33 @@ body {
 }
 
 #captain-btn-cont{
-  @apply flex w-full flex-row justify-evenly items-center flex-wrap;
+  @apply flex w-full flex-col justify-evenly items-center flex-wrap;
 }
 
 #captain-btn-cont button{
-  @apply border-2 bg-black text-white border-white;
+  @apply border-2 bg-black text-white border-white mt-4;
 }
 
 #captain-btn-cont button:hover{
   @apply bg-white bg-opacity-65 text-black border-red-600;
+}
+
+#cancel-team-del{
+  @apply w-20 p-2 h-11;
+  overflow: hidden;
+  animation-name: cancel-appear;
+  animation-duration: 1.2s;
+  animation-timing-function: ease;
+}
+@keyframes cancel-appear{
+  0% {height: 1px;
+      
+      @apply w-20;
+      padding: 0px;
+  } 
+  100% {
+       @apply p-2 h-11;
+      }
 }
 
 .confirm-changes{
@@ -364,6 +382,7 @@ button, .input-button {
   background-color: #e91c24;
   color: white;
   cursor: pointer;
+  text-align: center;
   transition: border-color 0.25s;
 }
 

@@ -124,6 +124,11 @@ export function Home(){
                                  setNumTeams(numTeams+1)
                             } 
                             joinTeam();
+                            setTeamIdError("Joining team.")
+                            setTimeout(()=>{
+                                window.location.reload();
+                            })
+                            
                             
                         }
                         else{
@@ -259,7 +264,7 @@ const TeamTableEntry = ({teamObj}) => {
     const [confirmShow, setConfirmShow] = useState(false)
 
     const [editClicked, setEditClicked] = useState(false)
-    const leaveConfirm = useRef(false)
+    const [leaveConfirm, setLeaveConfirm] = useState(false)
 
     function handleEdit(){
         setEditClicked(false)
@@ -281,7 +286,7 @@ const TeamTableEntry = ({teamObj}) => {
     }
 
     function handleConfirmLeave(){
-        leaveConfirm.current = true;
+        setLeaveConfirm(true);
     }
 
     let sportIcon = null;
@@ -317,8 +322,7 @@ const TeamTableEntry = ({teamObj}) => {
         }
         setEditClicked(false);
 
-        if(leaveConfirm.current){
-            //console.log("im tryna gooo")
+        if(leaveConfirm == true){
             const leaveTeam = async() => {
                 const myHeaders = new Headers();
                 myHeaders.append("Content-Type", "application/json");
@@ -336,6 +340,7 @@ const TeamTableEntry = ({teamObj}) => {
                  console.log('yo')
             } 
             leaveTeam();
+            setLeaveConfirm(false);
             window.location.reload();
         }
 

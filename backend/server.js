@@ -11,13 +11,16 @@ import {leagues, availableLeagues,playerByID, players,
     teamByID, teams,
     registerStudent, updateTeam,
     studentJoinTeam, studentLeaveTeam,
-    createTeam, teamsByLeague,
+    createTeam, teamsByLeague, deleteTeam, 
     studentsInTeam} from "./src/routes.js"
     
   app.post("/students", registerStudent);
   app.post("/teams", createTeam)
   app.post("/players", studentJoinTeam);
+
   app.delete("/players", studentLeaveTeam);
+  app.delete("/teams", deleteTeam)
+
   app.get("/players", players);
   app.get("/leagues", leagues);
   app.get("/teams", teams)

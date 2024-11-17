@@ -11,6 +11,7 @@ export function TeamEdit() {
 
     const navigate = useNavigate()
 
+    const studentID=useStudentStore((state)=>state.studentID)
     const name=useCurrTeamStore((state)=>state.name)
     const teamID=useCurrTeamStore((state)=>state.teamID)
     const numPlayers=useCurrTeamStore((state)=>state.numPlayers)
@@ -23,15 +24,18 @@ export function TeamEdit() {
     const players=useCurrTeamStore((state)=>state.playersList)
     const updatePlayers = useCurrTeamStore(useShallow((state)=> state.updatePlayers));
 
+    const [deleteClicked, setDeleteClick] = useState(false)
+    const [confDelete, setConfDelete] = useState(false)
+
     //selectCaptain
 
     const [changesMessage, setMessage] = useState('')
     const [changeClicked, setChange] = useState(false)
     const [nameError, setNameError] = useState('')
 
-    const [newCaptain, setNewCap] = useState(0)
     const [newName, setNewName] = useState("")
     const effectRan = useRef(false)
+    const nc=useCurrTeamStore((state)=>state.captainSID)
 
     const onChangeClick = () => {
 
@@ -43,48 +47,99 @@ export function TeamEdit() {
     }
 
     setChange(true)
+    effectRan.current = false;
+    }
+
+    const onDeleteClick = () => {
+        setDeleteClick(true);
+        effectRan.current = false;
+    }
+
+    const onDeleteConfirm = () => {
+        setConfDelete(true);
+        effectRan.current = false;
     }
     
     useEffect(()=>{
-        console.log(changeClicked)
+        
         if(effectRan.current == false){
 
-            console.log(teamID)
+            var youAreNotCaptain = false;
             const fetchPlayers = async() => {
                     const result = await fetch(`http://localhost:8800/players/team/${teamID}`)
                     result.json().then(json => {
                         console.log(json)
                             updatePlayers(json);
+
+                            json.forEach(player => {
+                                if(player.studentID == studentID)
+                                    youAreNotCaptain = true;
+                            });
+
                         })
                     }
             fetchPlayers();
-            
+            if(youAreNotCaptain){
+                effectRan.current = true;
+                navigate('/home')
+                return;
+            }
+            //save changes
             if(changeClicked == true){
-                const nc=useCurrTeamStore((state)=>state.newCapID)
+                console.log("well he clicked change after all")
                 const updateTeam = async() => {
+                    const myHeaders = new Headers();
+                    myHeaders.append("Content-Type", "application/json");
+
                     const response = await fetch(`http://localhost:8800/teams/:${teamID}`, {
                         method: "PUT",
                         body: JSON.stringify({ 
                             teamID: teamID,
                             captainID: nc,
                             newName: newName,
-                        })
-                        });
-                        console.log(response)
-
-                    if(response.ok){
-                        window.location.reload();
-                    }
+                            }),
+                            headers: myHeaders
+                        });          
                 }
                 updateTeam(); 
                 //fetch update team
-            
+                setMessage("Updating team")
+                setTimeout(()=>{
+                    navigate('/home')
+
+                }, "2 seconds")
+                setChange(false);
+                effectRan.current = true;
+            }  
+            //deleting
+            else if(confDelete == true){
+                const deleteTeam = async() => {
+                    const myHeaders = new Headers();
+                    myHeaders.append("Content-Type", "application/json");
+
+                    const response = await fetch(`http://localhost:8800/teams/`, {
+                        method: "DELETE",
+                        body: JSON.stringify({ 
+                            teamID: teamID
+                            }),
+                            headers: myHeaders
+                        });          
+                }
+                deleteTeam(); 
+                //fetch update team
+                setMessage("Deleting team")
+                setTimeout(()=>{
+                    navigate('/home')
+
+                }, "3 seconds")
+                setChange(false);
+                effectRan.current = true;
             }
-            setChange(false);
+            
         return() => {
             effectRan.current = true;
             }
-        }
+        } 
     })
         
     function onBack() {
@@ -98,12 +153,7 @@ export function TeamEdit() {
         <div className="content" style={{alignItems: "center", width: "85%", marginTop: "20px"}}>
 
             <div id="regista">
-                {/* <a className="fake-ref" href="">
-                    <div className="back-button" onClick={onBack}>
-                        <FontAwesomeIcon style={{marginRight: "5px"}}icon={faBackward} />
-                        <h2> Back </h2>
-                    </div>
-                </a> */}
+
                 <BackBtn innerRef={onBack}></BackBtn>
                 
 
@@ -151,7 +201,13 @@ export function TeamEdit() {
 
                 <div className = "input-container">
                     <div id="captain-btn-cont">
-                        <button>Delete Team</button>    
+                        {deleteClicked == false && <button onClick={onDeleteClick}>Delete Team</button>}    
+                        {deleteClicked &&
+                        <>
+                            <button onClick={onDeleteConfirm}>Press Again to Confirm</button>
+                            <button id="cancel-team-del" onClick={()=>{setDeleteClick(false)}}> Cancel </button>
+                        </>
+                        }
                         
                     </div>
                     
@@ -175,17 +231,27 @@ export function TeamEdit() {
 const PlayerTable = ({players}) =>{
 
     const [highlighted, setHighlighted] = useState(-1)
+    const [captainChange, capChanger] = useState(useCurrTeamStore(useShallow((state)=>state.captainSID)))
+
+    const updateCap = useCurrTeamStore(useShallow((state)=>state.updateCaptainSID))
+    const currentCap = useCurrTeamStore(useShallow((state)=>state.captainSID));
+
     const indices = [...Array(players.length).keys()]
+    useEffect(()=>{
+        updateCap(captainChange);
+        console.log("new cap is " + currentCap)
+    })
     return(
             <div className="tl-table">
+                {console.log(captainChange)}
                 {indices.map((e) => {
 
                                 if(highlighted == e)
                                     return <PlayerTableEntry key={e} ind={e} highlighted={true}
-                                    stateChanger={setHighlighted} playerObj={players.at(e)}></PlayerTableEntry>
+                                    stateChanger={setHighlighted} capChanger={capChanger} playerObj={players.at(e)}></PlayerTableEntry>
                                 else
                                     return <PlayerTableEntry key={e} ind={e} highlighted={false} 
-                                    stateChanger={setHighlighted} playerObj={players.at(e)}></PlayerTableEntry>
+                                    stateChanger={setHighlighted} capChanger={capChanger} playerObj={players.at(e)}></PlayerTableEntry>
                                                     
                     })}
                 {indices.length == 0 &&
@@ -201,14 +267,14 @@ PlayerTable.propTypes = {
     players: PropTypes.array
 }
 
-const PlayerTableEntry = ({playerObj, stateChanger, ind, highlighted}) => {
+const PlayerTableEntry = ({playerObj, stateChanger, capChanger, ind, highlighted}) => {
     const studentID = playerObj.studentID;
     const teamID = playerObj.teamID;
     const gender = playerObj.gender;
     const first = playerObj.firstName;
     const last = playerObj.lastName;
-    const newCap = useCurrTeamStore(useShallow((state)=>state.updateNewCap));
-
+    const oldCap = useRef(useCurrTeamStore(useShallow((state)=>state.captainSID)));
+    
     let displayGender = ""
     switch(gender){
         case "M":
@@ -222,14 +288,18 @@ const PlayerTableEntry = ({playerObj, stateChanger, ind, highlighted}) => {
             break; //lol
     }
     function handleClick(){
-        newCap(studentID)
-        if(highlighted)
+        if(highlighted){
             stateChanger(-1)
-        else{
-            stateChanger(ind)
+            capChanger(oldCap.current)
         }
-        console.log("New potential captain: " + studentID)
+        else {
+
+            stateChanger(ind)
+            capChanger(studentID)
+        }    
     }
+
+   
 
     return(
         <div className="tl-entry" id="player-entry">
@@ -245,7 +315,7 @@ const PlayerTableEntry = ({playerObj, stateChanger, ind, highlighted}) => {
 
 PlayerTableEntry.propTypes = {
     playerObj: PropTypes.object,
-    stateChanger: PropTypes.funct,
-    key: PropTypes.number,
+    stateChanger: PropTypes.func,
+    ind: PropTypes.number,
     highlighted: PropTypes.bool
 }

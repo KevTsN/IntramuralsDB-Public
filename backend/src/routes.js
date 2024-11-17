@@ -238,15 +238,9 @@ async function isTeamFull(teamID){
 }
 
 async function willTeamEmpty(teamID){
-  let q = `SELECT numPlayers from teams where teamID=${teamID} and numPlayers < 2`;
+  let q = `SELECT numPlayers from teams where (teamID=${teamID} and numPlayers < 2)`;
   const [rows,fields]=await db.promise().query(q);
-
-  // if(rows.affectedRows < 1)
-  //   return false;
-  console.log(rows);
-  let mbappe = rows.pop();
-
-    if(mbappe === undefined)
+    if(rows.length > 0)
       return true;
     return false;
 }
@@ -331,11 +325,9 @@ export async function studentLeaveTeam(req,res){
         req.body.teamID,
     ]
     
-    console.log("HE HIT MY CAR ON THE HIGHWAY AND HE TRYNA LEAVE")
     //will team be empty
     let q = `SELECT teams.leagueID from teams LEFT JOIN leagues on (teams.leagueID = leagues.leagueID) where teamID=${values[1]}`;
     let leagueID = await getLeagueId(q);
-    console.log("League is " + leagueID)
 
     if(await willTeamEmpty(values[1]) == true){
       console.log(`The team with ID ${values[1]} will be deleted because there are no more players left.`)
@@ -363,7 +355,7 @@ export async function studentLeaveTeam(req,res){
         }
     )
 
-    q = `DELETE FROM players where playerID=${PlayerIDCalc}`
+    q = `DELETE FROM players where (studentID = ${values[0]} and teamID=${values[1]})`
     db.query(q, (err, data) => {
         if (err) return res.send(err);
         return res.json(data);
@@ -388,8 +380,9 @@ export async function updateTeam(req,res){
   const bodyObj = {
     teamID: req.body.teamID,
     captainID: req.body.captainID,
-    newName: req.body.name,
+    newName: req.body.newName,
   }
+  console.log(bodyObj)
   if(await checkLeagueForName(bodyObj["teamID"], bodyObj["newName"]) == true){
     return false;
   }
@@ -399,13 +392,36 @@ export async function updateTeam(req,res){
   console.log(bodyObj)
   let q = `UPDATE teams set name = "${bodyObj['newName']}" where teamID = ${bodyObj['teamID']}`
   db.query(q, (err,data) =>{
-    if(err) return res.send(err);
   })
 
   q = `UPDATE teams set captainSID = ${bodyObj['captainID']} where teamID=${bodyObj['teamID']}`
   db.query(q, (err,data) =>{
-    if(err) return res.send(err);
-  })
+    })
   
 }
 
+export async function deleteTeam(req, res){
+  const teamID = req.body.teamID;
+
+  let q = `SELECT teams.leagueID from teams LEFT JOIN leagues on (teams.leagueID = leagues.leagueID) where teamID=${teamID}`;
+  let leagueID = await getLeagueId(q);
+
+  console.log(`The team with ID ${teamID} is being deleted.`)
+
+  q = `delete from teams where teamID=${teamID}`;
+  db.query(q,(err,data)=>{
+    if (err) return res.send(err);
+    return res.json(data);
+  })
+  q = `update leagues set numTeams=numTeams -1 where leagueID=${leagueID}`;
+  db.query(q,(err,data)=>{
+    if (err) return res.send(err);
+    return res.json(data);
+  })
+
+  q = `delete from players where teamID=${teamID}`
+  db.query(q, (err,data)=>{
+    if (err) return res.send(err);  
+    return res.json(data);      
+  })
+}
