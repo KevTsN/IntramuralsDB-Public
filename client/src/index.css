@@ -76,6 +76,8 @@ body {
   font-family: "Tilt Warp";
 }
 
+
+
 /* login */
 #login{
   @apply m-auto rounded-md border-white border-4 p-16 my-14 ;
