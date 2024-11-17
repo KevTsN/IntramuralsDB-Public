@@ -33,10 +33,10 @@ export function TeamEdit() {
     const [changeClicked, setChange] = useState(false)
     const [nameError, setNameError] = useState('')
 
-    const [newName, setNewName] = useState("")
+    const [newName, setNewName] = useState(name)
     const effectRan = useRef(false)
     const nc=useCurrTeamStore((state)=>state.captainSID)
-
+    const [captainChange, capChanger] = useState(useCurrTeamStore(useShallow((state)=>state.captainSID)))
     const onChangeClick = () => {
 
     setChange(false)
@@ -61,9 +61,9 @@ export function TeamEdit() {
     }
     
     useEffect(()=>{
-        
-        if(effectRan.current == false){
+        console.log(captainChange)
 
+        if(effectRan.current == false){
             var youAreNotCaptain = false;
             const fetchPlayers = async() => {
                     const result = await fetch(`http://localhost:8800/players/team/${teamID}`)
@@ -86,17 +86,22 @@ export function TeamEdit() {
             }
             //save changes
             if(changeClicked == true){
-                console.log("well he clicked change after all")
                 const updateTeam = async() => {
                     const myHeaders = new Headers();
                     myHeaders.append("Content-Type", "application/json");
+
+                    let mate = 0
+
+                    if(newName!=name){
+                        mate = newName;
+                    }
 
                     const response = await fetch(`http://localhost:8800/teams/:${teamID}`, {
                         method: "PUT",
                         body: JSON.stringify({ 
                             teamID: teamID,
-                            captainID: nc,
-                            newName: newName,
+                            captainID: captainChange,
+                            newName: mate,
                             }),
                             headers: myHeaders
                         });          
@@ -190,7 +195,7 @@ export function TeamEdit() {
                     <div className = "input-container">
                         <label> <h3> Players</h3> </label>
                         <h5> Select a player below to change them to captain when changes are saved.</h5>
-                        <PlayerTable players={players}></PlayerTable>
+                        <PlayerTable players={players} capChanger={capChanger}></PlayerTable>
                         <p style={{marginTop: "10px"}}>If you wish to leave this team, you must set another captain first then leave in home, or delete the team with only you in it.
                         </p>
 
@@ -228,22 +233,20 @@ export function TeamEdit() {
     )
 }
 
-const PlayerTable = ({players}) =>{
+const PlayerTable = ({players, capChanger}) =>{
 
     const [highlighted, setHighlighted] = useState(-1)
-    const [captainChange, capChanger] = useState(useCurrTeamStore(useShallow((state)=>state.captainSID)))
 
-    const updateCap = useCurrTeamStore(useShallow((state)=>state.updateCaptainSID))
-    const currentCap = useCurrTeamStore(useShallow((state)=>state.captainSID));
+    // const updateCap = useCurrTeamStore(useShallow((state)=>state.updateCaptainSID))
+    // const currentCap = useCurrTeamStore(useShallow((state)=>state.captainSID));
 
     const indices = [...Array(players.length).keys()]
-    useEffect(()=>{
-        updateCap(captainChange);
-        console.log("new cap is " + currentCap)
-    })
+    // useEffect(()=>{
+    //     updateCap(captainChange);
+    //     console.log("new cap is " + currentCap)
+    // })
     return(
             <div className="tl-table">
-                {console.log(captainChange)}
                 {indices.map((e) => {
 
                                 if(highlighted == e)

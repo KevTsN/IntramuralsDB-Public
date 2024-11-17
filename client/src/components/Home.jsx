@@ -8,6 +8,7 @@ import { useStudentStore, useCurrLeagueStore, useCurrTeamStore } from "../Stores
 import {PropTypes} from 'prop-types'
 import { useShallow } from 'zustand/react/shallow'
 import { canJoinGender } from "../ApiFunctions"
+import { LeagueTeams } from "./LeagueTeams"
 
 
 export function Home(){
@@ -161,7 +162,7 @@ export function Home(){
                 </a>
                 </div>
                 
-                <TeamTable teams={teams}></TeamTable>
+                <TeamTable teams={teams} view="Student" ></TeamTable>
 
                 <div className="home-sub-cont">
                     <div id="home-sub-top">
@@ -217,15 +218,15 @@ export function Home(){
 
 
 
-const TeamTable = ({teams}) =>{
+const TeamTable = ({teams, view}) =>{
     const indices = [...Array(teams.length).keys()]
     return(
         <div className="t-table-full">
 
-            <h2 style={{textAlign: "left", marginBottom: "10px", width: "100%"}}> Manage Teams </h2>
+            {view == "Student" && <h2 style={{textAlign: "left", marginBottom: "10px", width: "100%"}}> Manage Teams </h2>}
             <div className="tl-table">
                 {indices.map((e) => {
-                        return <TeamTableEntry key={e} teamObj={teams.at(e)}></TeamTableEntry>
+                        return <TeamTableEntry key={e} view={view} teamObj={teams.at(e)}></TeamTableEntry>
                     })}
             </div>
 
@@ -234,10 +235,11 @@ const TeamTable = ({teams}) =>{
 }
 
 TeamTable.propTypes = {
-    teams: PropTypes.array
+    teams: PropTypes.array,
+    view: PropTypes.string
 }
 
-const TeamTableEntry = ({teamObj}) => {
+export const TeamTableEntry = ({teamObj, view}) => {
     const navigate = useNavigate();
     const name=teamObj.name;
     const sport = teamObj.sport;
@@ -351,11 +353,15 @@ const TeamTableEntry = ({teamObj}) => {
             {confirmShow == false && <div className="tl-info">
                 <h3 className="tl-name"> {sportIcon} {name}  </h3>
                 <h5>Record: {wins} W {losses} L </h5>
-                <p className="team-league-info"> {gender} {sport}, Level {level}</p>
+                {view != "League" && <p className="team-league-info"> {gender} {sport}, Level {level}</p>}
             </div>}
-            {confirmShow == false && sid!=teamObj.captainSID && <button onClick={handleLeaveClick}>Leave Team</button>}                
-            {confirmShow == false && sid==teamObj.captainSID && <button onClick={handleEdit}>Edit Team</button>}
-            {confirmShow == true &&
+
+            <div className="entry-btns">
+                {view=="Student" && confirmShow == false && sid!=teamObj.captainSID && <button onClick={handleLeaveClick}>Leave Team</button>}                
+                {view=="Student" && confirmShow == false && sid==teamObj.captainSID && <button onClick={handleEdit}>Edit Team</button>}
+            </div>
+
+            {view=="Student" && confirmShow == true &&
                     <div className="confirm-changes">
                         <div id="leave-tl-name">
                             <h3>Confirm that you want to leave the team:</h3>
@@ -373,19 +379,37 @@ const TeamTableEntry = ({teamObj}) => {
 }
 
 TeamTableEntry.propTypes = {
-    teamObj:PropTypes.object
+    teamObj:PropTypes.object,
+    view: PropTypes.string
 }
 
 const LeagueTable = ({leagues}) => {
     const indices = [...Array(leagues.length).keys()]
+    const [viewingLeague, setView] = useState(false)
+    const [leagueIndex, setIndex] = useState(-1)
+    const [teams, setTeams] = useState([])
     return(
+            <>
+            {viewingLeague == false && 
+                <div className="tl-table">
+                    {indices.map((e) => {
+                            return <LeagueTableEntry key={e} setIndex={setIndex} setView={setView} currInd={e} 
+                            setTeams={setTeams} leagueObj={leagues.at(e)}></LeagueTableEntry>
+                        })}
 
-            <div className="tl-table">
-                {indices.map((e) => {
-                        return <LeagueTableEntry key={e} leagueObj={leagues.at(e)}></LeagueTableEntry>
-                    })}
-            </div>
+                    </div>
+            }
 
+            {viewingLeague && 
+                <div style={{display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center"}}>
+                    
+                    <h3>{leagues.at(leagueIndex).genders} {leagues.at(leagueIndex).sport}</h3>
+                    <h4>Level {leagues.at(leagueIndex).skillLevel}</h4>
+                    <button onClick={()=>{setView(false)}} style={{margin: "5px auto"}}>View Leagues</button>
+                    <LeagueTeams leagueObj={leagues.at(leagueIndex)} teams={teams}></LeagueTeams>
+                </div>
+            }
+            </>
     )
 }
 
@@ -393,13 +417,14 @@ LeagueTable.propTypes = {
     leagues: PropTypes.array
 }
 
-const LeagueTableEntry = ({leagueObj}) => {
+const LeagueTableEntry = ({leagueObj, setIndex, currInd, setView, setTeams}) => {
     const sport = leagueObj.sport;
     const numTeams = leagueObj.numTeams;
     const maxTeams = leagueObj.maxTeams;
     const maxPlayers = leagueObj.maxPlayers;
     const gender = leagueObj.genders;
     const level = leagueObj.skillLevel;
+    const leagueID = leagueObj.leagueID;
 
     const updateID = useCurrLeagueStore(useShallow((state) => state.updateID));
     const updateNumTeams = useCurrLeagueStore(useShallow((state) => state.updateNumTeams));
@@ -413,7 +438,6 @@ const LeagueTableEntry = ({leagueObj}) => {
     const canJoinGender = useRef(true);
 
     const navigate = useNavigate()
-
 
     let sportIcon = null;
     switch(sport){
@@ -444,7 +468,7 @@ const LeagueTableEntry = ({leagueObj}) => {
 
 
     function handleClick(){
-        updateID(leagueObj.leagueID);
+        updateID(leagueID);
         updateLevel(level)
         updateGenders(gender)
         updateSport(sport)
@@ -453,6 +477,39 @@ const LeagueTableEntry = ({leagueObj}) => {
         updateMaxTeams(maxTeams)
         navigate('/createteam')
     }
+
+    const [goingToView, setGoing] = useState(false)
+    function handleJoinClick(){
+        effectRan.current = false;
+        setGoing(true);
+        setIndex(currInd)
+        //setView(true)
+    }
+
+    const effectRan = useRef(false)
+    useEffect(()=>{
+       if(!effectRan.current){
+            if(goingToView){
+                const fetchTeams = async() => {
+                    {
+                        const url = `http://localhost:8800/teams/league/${leagueID}`
+                        const result = await fetch(url);
+                        result.json().then(json => {
+                            setTeams(json);
+                        })
+                    }
+                }
+                fetchTeams();
+                setView(true); //now we can finally let u view teams
+            }
+
+            return()=>{
+                effectRan.current = true;
+            }
+        }
+    })
+
+
     return(
         <div className="tl-entry" id="league-entry">
             <div className="tl-info">
@@ -460,12 +517,20 @@ const LeagueTableEntry = ({leagueObj}) => {
                 <h5>Level {level} </h5>
                 <p className="team-league-info">Max players: {maxPlayers}, {numTeams}/{maxTeams} teams</p>
             </div>
+            <div className="entry-btns" id="league-btns">
             {canJoinGender.current && <button onClick={handleClick}>Create Team</button>}
+            {numTeams > 0 && <button onClick={handleJoinClick}>View Teams</button>}
+            </div>
+
         </div>
     )
     
 }
 
 LeagueTableEntry.propTypes = {
-    leagueObj: PropTypes.object
+    leagueObj: PropTypes.object,
+    currInd: PropTypes.number,
+    setView: PropTypes.func,
+    setIndex: PropTypes.func,
+    setTeams: PropTypes.func
 }

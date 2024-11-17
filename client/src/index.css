@@ -189,7 +189,7 @@ body {
 }
 
 .tl-table{
-  @apply flex flex-wrap w-full m-auto border-white rounded-md border-2;
+  @apply flex flex-wrap w-full m-auto border-white rounded-md border-2 pt-1;
   max-height: 422px;
   overflow-y: auto;
 }
@@ -215,6 +215,14 @@ body {
 
 .tl-info{
   @apply w-4/5 flex flex-col items-start;
+}
+
+.entry-btns{
+  @apply w-1/5 flex flex-col items-end;
+}
+#league-btns button{
+  padding: 0.3em 0.6em;
+  @apply my-1;
 }
 
 #captain-btn-cont{
@@ -257,7 +265,7 @@ body {
   @apply w-1/4;
 }
 .home-sub-cont{
-  @apply flex flex-wrap flex-col w-4/5 m-auto border-white rounded-md border-4 p-2;
+  @apply flex flex-wrap flex-col w-4/5 m-auto border-white rounded-md border-4 pl-2 pr-2 pb-2;
   margin-top: 10px !important;
 }
 
@@ -266,8 +274,12 @@ body {
 
 }
 
-.home-sub-top{
+#home-sub-top{
   @apply flex flex-wrap flex-row justify-between items-start mr-auto my-1;
+  padding: initial;
+  padding-top: 0.5em !important;
+  padding-left: 0.5em;
+  text-align: left;
 }
 
 

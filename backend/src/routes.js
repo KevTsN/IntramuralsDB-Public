@@ -87,7 +87,7 @@ export function teamByID(req, res) {
 
 export function teamsByLeague(req, res) {
   const leagueID = req.params.id;
-  const q = " SELECT * from teams WHERE leagueID = ? ";
+  const q = " SELECT teams.*, leagues.genders, leagues.sport from teams left join leagues ON (teams.leagueID = leagues.leagueID) WHERE teams.leagueID = ? ";
 
   db.query(q, [leagueID], (err, data) => {
     if (err) return res.send(err);
@@ -382,18 +382,17 @@ export async function updateTeam(req,res){
     captainID: req.body.captainID,
     newName: req.body.newName,
   }
-  console.log(bodyObj)
-  if(await checkLeagueForName(bodyObj["teamID"], bodyObj["newName"]) == true){
-    return false;
+  //console.log(bodyObj)
+  let q = ""  
+  if(typeof(bodyObj.newName) == "string"){
+    if(await checkLeagueForName(bodyObj["teamID"], bodyObj["newName"]) == true){
+      return false;
+    }
+    q = `UPDATE teams set name = "${bodyObj['newName']}" where teamID = ${bodyObj['teamID']}`
+    db.query(q, (err,data) =>{
+    })
+
   }
-
-
-  
-  console.log(bodyObj)
-  let q = `UPDATE teams set name = "${bodyObj['newName']}" where teamID = ${bodyObj['teamID']}`
-  db.query(q, (err,data) =>{
-  })
-
   q = `UPDATE teams set captainSID = ${bodyObj['captainID']} where teamID=${bodyObj['teamID']}`
   db.query(q, (err,data) =>{
     })
