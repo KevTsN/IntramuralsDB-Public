@@ -200,13 +200,7 @@ export function TeamEdit() {
                         <h5>{genders} {sport}</h5>
                         <h4> Level {level} </h4>
                     </div>
-
-                    <div className = "input-container">
-                        <label> <h3> Your Team ID</h3> </label>
-                        <h5 style={{fontWeight: "bold"}}> <FontAwesomeIcon icon={faOtter} /> {teamID}</h5>
-                        <h4> Keep this ID safe, as you may need to provide it to any new members who want to join. </h4>
-                    </div>
-
+                    
                     <div className = "input-container-space">
                         <label> <h3> Requests 
                             {reqShow && <FontAwesomeIcon id="toggle-join" icon={faCircleChevronUp} onClick={()=>{setReqShow(!reqShow)}} />}

@@ -177,35 +177,6 @@ export function Home(){
 
                 <div className="home-sub-cont">
                     <div id="home-sub-top">
-                        <label> <h3> Join new team 
-                        {joinShow && <FontAwesomeIcon id="toggle-join" icon={faCircleChevronUp} onClick={()=>{setJoinShow(!joinShow)}} />}
-                        {!joinShow && <FontAwesomeIcon id="toggle-join" icon={faCircleChevronDown} onClick={()=>{setJoinShow(!joinShow)}} />}
-                            </h3> 
-                        </label>
-                        
-                    </div>
-
-                    {joinShow &&
-                    <> 
-                    <div id="new-team-input" className = "input-container">
-                            <input
-                            value={newTeamID}
-                            placeholder="Enter team ID"
-                            onChange={(ev) => setNewTeamID(ev.target.value)}
-                            className="input-box"
-                            />
-                        </div>
-                    <label> {teamIdError} </label>
-                    <button id="join-button" onClick={onJoinClick}>Join Team</button>
-                    {/* onclick for join team */}
-
-                </>
-                }
-                </div>
-
-
-                <div className="home-sub-cont">
-                    <div id="home-sub-top">
                         <label> <h3> View Leagues 
                         {leagueShow && <FontAwesomeIcon id="toggle-join" icon={faCircleChevronUp} onClick={()=>{setLeagueShow(!leagueShow)}} />}
                         {!leagueShow && <FontAwesomeIcon id="toggle-join" icon={faCircleChevronDown} onClick={()=>{setLeagueShow(!leagueShow)}} />}
