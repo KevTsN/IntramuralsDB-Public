@@ -597,7 +597,14 @@ const LeagueTableEntry = ({leagueObj, setIndex, currInd, setView, setTeams}) => 
                     canJoinGender.current = false;
                 break;
         }
-    
+        stuTeams.forEach(element => {
+            console.log(element)
+            console.log(leagueID)
+            if(element.leagueID == leagueID){
+                notInLeague.current = false;
+                return;
+            }
+        });
 
 
 

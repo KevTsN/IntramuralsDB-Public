@@ -408,16 +408,16 @@ export async function deleteTeam(req, res){
 
   q = `delete from teams where teamID=${teamID}`;
   db.query(q,(err,data)=>{
-    if (err) return res.send(err);
+   // if (err) return res.send(err);
   })
   q = `update leagues set numTeams=numTeams -1 where leagueID=${leagueID}`;
   db.query(q,(err,data)=>{
-    if (err) return res.send(err);
+   // if (err) return res.send(err);
   })
 
   q = `delete from players where teamID=${teamID}`
   db.query(q, (err,data)=>{
-    if (err) return res.send(err);  
+    //if (err) return res.send(err);  
     return res.json(data);    
     //error here for some reason  
   })
