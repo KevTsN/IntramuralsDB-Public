@@ -232,6 +232,7 @@ export const TeamTableEntry = ({teamObj, view}) => {
 
     const teamID=teamObj.teamID;
     const sid =useStudentStore((state)=>state.studentID)
+    const stuGen =useStudentStore((state)=>state.gender)
     const reqs =useStudentStore((state)=>state.outRequests)
     const updateRequests =useStudentStore((state)=>state.updateRequests)
 
@@ -255,8 +256,9 @@ export const TeamTableEntry = ({teamObj, view}) => {
     const [leaveConfirm, setLeaveConfirm] = useState(false)
 
     const[request, setRequest] = useState(false)
-    const [canReq, setCanReq] = useState(true);
+    const [dupeReq, setDupeReq] = useState(false);
     const [deleteReq, setDelete] = useState(false)
+    const [canReq, setCanReq] = useState(true);
 
     function handleEdit(){
         setEditClicked(false)
@@ -271,6 +273,8 @@ export const TeamTableEntry = ({teamObj, view}) => {
         setEditClicked(true);
         navigate('/teamedit');
     }
+
+    
 
     function handleLeaveClick(){
         //save for later because i gotta do the whole confirm changes shit
@@ -313,9 +317,20 @@ export const TeamTableEntry = ({teamObj, view}) => {
 
     const effectRan = useRef(false)
     useEffect(()=>{
-
-        
         if(!effectRan.current){
+            switch(gender){
+                case "Male":
+                    if(stuGen != "M"){
+                        setCanReq(false);  
+                    }
+                    break;
+                case "Female":
+                    if(stuGen != "F"){
+                        setCanReq(false);  
+                }
+                break;
+            }
+
             const fetchRequests = async() => {
                 {
                     const url = `http://localhost:8800/student/requests/${sid}`
@@ -328,7 +343,7 @@ export const TeamTableEntry = ({teamObj, view}) => {
             fetchRequests();
             reqs.forEach(element => {
                 if(element.teamID == teamID){
-                    return setCanReq(false);
+                    return setDupeReq(true);
                 }
             });
             //setRequest(true);
@@ -424,7 +439,7 @@ export const TeamTableEntry = ({teamObj, view}) => {
                     headers: myHeaders,
                     });
                     if (response.ok){
-                        setCanReq(true);
+                        setDupeReq(false);
                         setRequest(false);
                         setDelete(false);
                     }
@@ -454,14 +469,14 @@ export const TeamTableEntry = ({teamObj, view}) => {
                 {view=="Student" && confirmShow == false && sid==teamObj.captainSID && <button onClick={handleEdit}>Edit Team</button>}
                 
                 {/*requests*/}
-                {view == "League" && !confirmShow && canReq && !request && 
+                {view == "League" && canReq && !confirmShow && !dupeReq && !request && 
                     <button className="req-btn"onClick={handleJoinRequest}>Request To Join</button>}
-                {view == "League" && !confirmShow && canReq && request && 
+                {view == "League" && !confirmShow && !dupeReq && request && 
                     <p id="req-sent">Request has been sent!</p>}
                     
-                {view == "League" && !confirmShow && !canReq && !request && !deleteReq &&
+                {view == "League" && canReq && !confirmShow && dupeReq && !request && !deleteReq &&
                     <button className="req-btn" id="req-btn-del" onClick={handleDeleteRequest} >Delete Pending Request</button>}
-                {/* {view == "League" && !confirmShow && !canReq && !request && deleteReq && 
+                {/* {view == "League" && !confirmShow && !dupeReq && !request && deleteReq && 
                     <p>Request has been deleted!</p>} */}
 
             </div>
