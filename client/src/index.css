@@ -99,6 +99,10 @@ body {
   @apply flex flex-col justify-center items-start; 
 }
 
+.input-container-space {
+  @apply flex flex-col justify-center items-start my-3; 
+}
+
 .input-container > .errorLabel {
   color: red;
   font-size: 12px;
@@ -216,12 +220,15 @@ body {
 }
 
 .tl-info{
-  @apply w-4/5 flex flex-col items-start;
+  @apply flex flex-col items-start;
+  width: 70%;
 }
 
 .entry-btns{
-  @apply w-1/5 flex flex-col items-end;
+  @apply flex flex-col items-end;
+  width: 30%;
 }
+
 #league-btns button{
   padding: 0.3em 0.6em;
   @apply my-1;
@@ -271,6 +278,37 @@ body {
   margin-top: 10px !important;
 }
 
+/*team-requests*/
+.reqs-table{
+  @apply flex flex-wrap w-full m-auto border-white rounded-md border-2 p-1 mt-2;
+  /* max-height: 422px; */
+  overflow-y: auto;
+}
+
+.reqs-entry{
+  @apply w-full flex flex-row my-1;
+}
+.reqs-info{
+  @apply flex flex-col items-start p-1;
+    margin-left: 10px;
+    width: 70%;
+}
+
+.reqs-entry-btns{
+  @apply items-center flex flex-row justify-evenly;
+  width: 30%;
+}
+
+.reqs-entry-btns button{
+  padding: 0.3em 0.6em;
+}
+
+.reqs-entry-btns button:hover{
+  background-color: white !important;
+  color: black;
+}
+
+
 #join-button{
   @apply w-1/5 ml-auto p-1 my-1; 
 
@@ -290,6 +328,20 @@ body {
 }
 
 
+/*joinreqs*/
+
+.req-btn{
+  padding: 0.3em 0.6em;
+  @apply my-1 w-48 m-auto;
+}
+
+#req-btn-del{
+  background: black;
+}
+
+#req-sent{
+  @apply m-auto;
+}
 
 
 /* logging out */

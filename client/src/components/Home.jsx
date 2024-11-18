@@ -21,6 +21,8 @@ export function Home(){
     const updateTeams = useStudentStore((state) => state.updateTeams)
     const leagues=useStudentStore((state)=>state.leagues)
     const updateLeagues = useStudentStore((state) => state.updateLeagues)
+    const updateRequests =useStudentStore((state)=>state.updateRequests)
+
     const stuGen=useStudentStore((state)=>state.gender)
 
     const sid =useStudentStore((state)=>state.studentID)
@@ -79,7 +81,16 @@ export function Home(){
             }
             fetchLeagues();
 
-
+            const fetchRequests = async() => {
+                {
+                    const url = `http://localhost:8800/student/requests/${sid}`
+                    const result = await fetch(url);
+                    result.json().then(json => {
+                        updateRequests(json);
+                    })
+                }
+            }
+            fetchRequests();
 
         if(joinAttempt){
             setTeamIdError("")
@@ -250,7 +261,11 @@ export const TeamTableEntry = ({teamObj, view}) => {
 
     const teamID=teamObj.teamID;
     const sid =useStudentStore((state)=>state.studentID)
+    const reqs =useStudentStore((state)=>state.outRequests)
+    const updateRequests =useStudentStore((state)=>state.updateRequests)
 
+
+    const updateTeamRequests =useCurrTeamStore((state)=>state.updateRequests)
     const updateName = useCurrTeamStore(useShallow((state) => state.updateName));
     const updateTeamID = useCurrTeamStore(useShallow((state) => state.updateTeamID));
     const updateLeagueID = useCurrTeamStore(useShallow((state) => state.updateLeagueID));
@@ -268,6 +283,10 @@ export const TeamTableEntry = ({teamObj, view}) => {
     const [editClicked, setEditClicked] = useState(false)
     const [leaveConfirm, setLeaveConfirm] = useState(false)
 
+    const[request, setRequest] = useState(false)
+    const [canReq, setCanReq] = useState(true);
+    const [deleteReq, setDelete] = useState(false)
+
     function handleEdit(){
         setEditClicked(false)
         updateName(teamObj.name);
@@ -279,16 +298,30 @@ export const TeamTableEntry = ({teamObj, view}) => {
         updateSport(teamObj.sport)
         updateLevel(teamObj.skillLevel)
         setEditClicked(true);
-        //navigate('/teamedit');
+        navigate('/teamedit');
     }
 
     function handleLeaveClick(){
         //save for later because i gotta do the whole confirm changes shit
         setConfirmShow(true);
+        effectRan.current = false;
+
     }
 
     function handleConfirmLeave(){
         setLeaveConfirm(true);
+        effectRan.current = false;
+
+    }
+
+    function handleJoinRequest(){
+        setRequest(true);
+        effectRan.current = false;
+    }
+
+    function handleDeleteRequest(){      
+        setDelete(true); 
+        effectRan.current = false;
     }
 
     let sportIcon = null;
@@ -307,43 +340,132 @@ export const TeamTableEntry = ({teamObj, view}) => {
             break;
         }
 
+    const effectRan = useRef(false)
     useEffect(()=>{
-        if(editClicked){
-            //console.log(teamID)
-            const fetchPlayers = async() => {
-                    const result = await fetch(`http://localhost:8800/players/team/${teamID}`, {
-                        
-                    })
+
+        
+        if(!effectRan.current){
+            const fetchRequests = async() => {
+                {
+                    const url = `http://localhost:8800/student/requests/${sid}`
+                    const result = await fetch(url);
                     result.json().then(json => {
-                        //console.log(json)
-                            updatePlayers(json);
+                        updateRequests(json);
+                    })
+                }
+            }
+            fetchRequests();
+            reqs.forEach(element => {
+                if(element.teamID == teamID){
+                    return setCanReq(false);
+                }
+            });
+            //setRequest(true);
+            //request btn doesnt render smooth
+
+            if(editClicked){
+                //console.log(teamID)
+                const fetchPlayers = async() => {
+                        const result = await fetch(`http://localhost:8800/players/team/${teamID}`, {
+                            
                         })
+                        result.json().then(json => {
+                            //console.log(json)
+                                updatePlayers(json);
+                            })
+                        }
+                    fetchPlayers();
+
+                    const fetchTeamRequests = async() => {
+                        const result = await fetch(`http://localhost:8800/team/${teamID}/requests/`, {
+                            
+                        })
+                        result.json().then(json => {
+                            console.log(json)
+                                updateTeamRequests(json);
+                            })
+                        }
+                    fetchTeamRequests();
+
+            navigate('/teamedit');
+            }
+
+            setEditClicked(false);
+
+            if(leaveConfirm == true){
+                const leaveTeam = async() => {
+                    const myHeaders = new Headers();
+                    myHeaders.append("Content-Type", "application/json");
+
+                    const response = await fetch("http://localhost:8800/players", {
+                    method: "DELETE",
+                    // 
+                    body: JSON.stringify({ 
+                        studentID: sid,
+                        teamID: teamID,
+                    }),
+
+                    headers: myHeaders,
+                    });
+                    console.log('yo')
+                } 
+                leaveTeam();
+                setLeaveConfirm(false);
+                window.location.reload();
+            }
+
+            if(request == true){
+                console.log("tried it lol")
+                const sendRequest = async() => {
+                    const myHeaders = new Headers();
+                    myHeaders.append("Content-Type", "application/json");
+
+                    const response = await fetch("http://localhost:8800/requests", {
+                    method: "POST",
+                    // 
+                    body: JSON.stringify({ 
+                        studentID: sid,
+                        teamID: teamID,
+                    }),
+
+                    headers: myHeaders,
+                    });
+                    if (response.ok)
+                        setRequest(true);
+                } 
+                sendRequest();
+            }
+
+            if(deleteReq){
+                console.log("tried it lol")
+                const deleteRequest = async() => {
+                    const myHeaders = new Headers();
+                    myHeaders.append("Content-Type", "application/json");
+
+                    const response = await fetch("http://localhost:8800/requests", {
+                    method: "DELETE",
+                    // 
+                    body: JSON.stringify({ 
+                        studentID: sid,
+                        teamID: teamID,
+                    }),
+
+                    headers: myHeaders,
+                    });
+                    if (response.ok){
+                        setCanReq(true);
+                        setRequest(false);
+                        setDelete(false);
                     }
-                fetchPlayers();
-        navigate('/teamedit');
-        }
-        setEditClicked(false);
+                } 
+                deleteRequest();
+                fetchRequests();
 
-        if(leaveConfirm == true){
-            const leaveTeam = async() => {
-                const myHeaders = new Headers();
-                myHeaders.append("Content-Type", "application/json");
-
-                const response = await fetch("http://localhost:8800/players", {
-                method: "DELETE",
-                // 
-                body: JSON.stringify({ 
-                    studentID: sid,
-                    teamID: teamID,
-                }),
-
-                headers: myHeaders,
-                 });
-                 console.log('yo')
-            } 
-            leaveTeam();
-            setLeaveConfirm(false);
-            window.location.reload();
+            }
+            return() => {
+                effectRan.current = true;
+            }
+            
         }
 
     })
@@ -356,9 +478,21 @@ export const TeamTableEntry = ({teamObj, view}) => {
                 {view != "League" && <p className="team-league-info"> {gender} {sport}, Level {level}</p>}
             </div>}
 
-            <div className="entry-btns">
+            <div className="entry-btns" id="league-entry-btns">
                 {view=="Student" && confirmShow == false && sid!=teamObj.captainSID && <button onClick={handleLeaveClick}>Leave Team</button>}                
                 {view=="Student" && confirmShow == false && sid==teamObj.captainSID && <button onClick={handleEdit}>Edit Team</button>}
+                
+                {/*requests*/}
+                {view == "League" && !confirmShow && canReq && !request && 
+                    <button className="req-btn"onClick={handleJoinRequest}>Request To Join</button>}
+                {view == "League" && !confirmShow && canReq && request && 
+                    <p id="req-sent">Request has been sent!</p>}
+                    
+                {view == "League" && !confirmShow && !canReq && !request && !deleteReq &&
+                    <button className="req-btn" id="req-btn-del" onClick={handleDeleteRequest} >Delete Pending Request</button>}
+                {/* {view == "League" && !confirmShow && !canReq && !request && deleteReq && 
+                    <p>Request has been deleted!</p>} */}
+
             </div>
 
             {view=="Student" && confirmShow == true &&

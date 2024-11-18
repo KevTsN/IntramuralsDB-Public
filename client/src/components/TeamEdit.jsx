@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react"
 import { useNavigate } from "react-router-dom"
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import {faOtter, faFaceSadCry, faStar} from '@fortawesome/free-solid-svg-icons'
+import {faOtter, faFaceSadCry, faStar, faCircleChevronDown, faCircleChevronUp} from '@fortawesome/free-solid-svg-icons'
 import { useStudentStore, useCurrTeamStore, useCurrLeagueStore } from "../Stores"
 import { BackBtn } from "./Back"
 import { useShallow } from 'zustand/react/shallow'
@@ -17,6 +17,8 @@ export function TeamEdit() {
     const numPlayers=useCurrTeamStore((state)=>state.numPlayers)
     const wins=useCurrTeamStore((state)=>state.wins)
     const losses=useCurrTeamStore((state)=>state.losses)
+    const requests=useCurrTeamStore((state)=>state.requestsList)
+    const updateTeamRequests=useCurrTeamStore((state)=>state.updateRequests)
 
     const genders=useCurrLeagueStore((state)=>state.genders)
     const sport=useCurrLeagueStore((state)=>state.sport)
@@ -35,8 +37,9 @@ export function TeamEdit() {
 
     const [newName, setNewName] = useState(name)
     const effectRan = useRef(false)
-    const nc=useCurrTeamStore((state)=>state.captainSID)
     const [captainChange, capChanger] = useState(useCurrTeamStore(useShallow((state)=>state.captainSID)))
+
+    const [reqShow, setReqShow] = useState(false)
     const onChangeClick = () => {
 
     setChange(false)
@@ -65,10 +68,10 @@ export function TeamEdit() {
 
         if(effectRan.current == false){
             var youAreNotCaptain = false;
+
             const fetchPlayers = async() => {
                     const result = await fetch(`http://localhost:8800/players/team/${teamID}`)
                     result.json().then(json => {
-                        console.log(json)
                             updatePlayers(json);
 
                             json.forEach(player => {
@@ -79,6 +82,18 @@ export function TeamEdit() {
                         })
                     }
             fetchPlayers();
+
+            const fetchTeamRequests = async() => {
+                const result = await fetch(`http://localhost:8800/team/${teamID}/requests/`, {
+                    
+                })
+                result.json().then(json => {
+                    console.log(json)
+                        updateTeamRequests(json);
+                    })
+                }
+            fetchTeamRequests();
+
             if(youAreNotCaptain){
                 effectRan.current = true;
                 navigate('/home')
@@ -192,7 +207,16 @@ export function TeamEdit() {
                         <h4> Keep this ID safe, as you may need to provide it to any new members who want to join. </h4>
                     </div>
 
-                    <div className = "input-container">
+                    <div className = "input-container-space">
+                        <label> <h3> Requests 
+                            {reqShow && <FontAwesomeIcon id="toggle-join" icon={faCircleChevronUp} onClick={()=>{setReqShow(!reqShow)}} />}
+                            {!reqShow && <FontAwesomeIcon id="toggle-join" icon={faCircleChevronDown} onClick={()=>{setReqShow(!reqShow)}} />}
+                                </h3> 
+                        </label>
+                        {reqShow && <RequestTable requests={requests} > </RequestTable>}
+                    </div>
+
+                    <div className = "input-container-space">
                         <label> <h3> Players</h3> </label>
                         <h5> Select a player below to change them to captain when changes are saved.</h5>
                         <PlayerTable players={players} capChanger={capChanger}></PlayerTable>
@@ -200,9 +224,6 @@ export function TeamEdit() {
                         </p>
 
                     </div>
-                    
-
-                <br/>   
 
                 <div className = "input-container">
                     <div id="captain-btn-cont">
@@ -321,4 +342,152 @@ PlayerTableEntry.propTypes = {
     stateChanger: PropTypes.func,
     ind: PropTypes.number,
     highlighted: PropTypes.bool
+}
+
+const RequestTable = ({requests}) => {
+    const indices = [...Array(requests.length).keys()]
+    console.log(requests)
+    return(
+
+        <div className="reqs-table">
+            {indices.map((e) => {
+                    return <RequestTableEntry key={e} requestObj={requests.at(e)}></RequestTableEntry>
+                })}
+
+            </div>
+    )
+}
+
+RequestTable.propTypes = {
+    requests: PropTypes.array
+}
+
+const RequestTableEntry = ({requestObj}) => {
+    const effectRan = useRef(false)
+    const datetime = requestObj.requestTime.split('T')[0];
+    const name = `${requestObj.firstName} ${requestObj.lastName}`
+    const studentID =  requestObj.studentID;
+    const teamID = requestObj.teamID
+
+    const updatePlayers = useCurrTeamStore(useShallow((state)=> state.updatePlayers));
+    const updateTeamRequests=useCurrTeamStore((state)=>state.updateRequests)
+
+
+    let gender = "";
+    switch(requestObj.gender){
+        case "M":
+            gender = "Male";
+            break;
+        case "F":
+            gender="Female";
+            break;
+        default:
+            gender = "Other";
+    }
+
+    const [accepted, setAccept] = useState(false);
+    const [declined, setDecline] = useState(false);
+    
+    function handleDecline(){
+        
+        effectRan.current = false;
+        setDecline(true);
+    }
+
+    function handleAccept(){
+        
+        effectRan.current = false;
+        setAccept(true);
+    }
+    
+
+    useEffect(()=>{
+        if(effectRan.current == false){
+
+            const fetchTeamRequests = async() => {
+                const result = await fetch(`http://localhost:8800/team/${teamID}/requests/`, {
+                    
+                })
+                result.json().then(json => {
+                    console.log(json)
+                        updateTeamRequests(json);
+                    })
+                }
+            const fetchPlayers = async() => {
+                const result = await fetch(`http://localhost:8800/players/team/${teamID}`)
+                result.json().then(json => {
+                        updatePlayers(json);
+                    })
+                }
+            //fetchTeamRequests();
+
+            if(accepted){
+                const acceptRequest= async() => {
+                    
+                    const myHeaders = new Headers();
+                    myHeaders.append("Content-Type", "application/json");
+
+                    const response = await fetch("http://localhost:8800/requests", {
+                    method: "PUT",
+                    // 
+                    body: JSON.stringify({ 
+                        studentID: studentID,
+                        teamID: teamID,
+                    }),
+
+                    headers: myHeaders,
+                    });
+                    if (response.ok){
+                        fetchTeamRequests();
+                        fetchPlayers();
+                    }
+                }
+                acceptRequest();    
+                //state should be updated?
+
+            }
+            if(declined){
+                const declineRequest= async() => {
+                    const myHeaders = new Headers();
+                    myHeaders.append("Content-Type", "application/json");
+                    console.log("green fn")
+                    const response = await fetch("http://localhost:8800/requests", {
+                    method: "DELETE",
+                    // 
+                    body: JSON.stringify({ 
+                        studentID: studentID,
+                        teamID: teamID,
+                    }),
+
+                    headers: myHeaders,
+                    });
+                    if (response.ok){
+                        fetchTeamRequests();
+                    }
+                }
+                declineRequest();
+                //state should be updated?
+            }
+            return()=>{
+                effectRan.current = true;
+            }
+        }
+    })
+    return(
+        <div className="reqs-entry">
+            <div className="reqs-info">
+                <h3>{name} </h3>
+                <h4>{datetime}</h4>
+            </div>
+            <div className="reqs-entry-btns">
+                <button onClick = {handleDecline}>Decline</button>
+                <button onClick={handleAccept} style={{backgroundColor: "green"}}>Accept</button>
+            </div>
+        </div>
+    )
+     
+}
+
+RequestTableEntry.propTypes = {
+    requestObj: PropTypes.object
 }

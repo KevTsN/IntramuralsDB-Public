@@ -12,7 +12,11 @@ import {leagues, availableLeagues,playerByID, players,
     registerStudent, updateTeam,
     studentJoinTeam, studentLeaveTeam,
     createTeam, teamsByLeague, deleteTeam, 
-    studentsInTeam} from "./src/routes.js"
+    studentsInTeam,
+    addJoinRequest, 
+    deleteJoinRequest, addPlayerByReq,
+    getJoinRequestsByStudent,
+    getJoinRequestsByTeam} from "./src/routes.js"
     
   app.post("/students", registerStudent);
   app.post("/teams", createTeam)
@@ -39,6 +43,13 @@ import {leagues, availableLeagues,playerByID, players,
   app.get("/players/team/:id", studentsInTeam)
   
   app.put("/teams/:id", updateTeam)
+
+  app.post("/requests", addJoinRequest)
+  app.delete("/requests", deleteJoinRequest)
+  app.get("/student/requests/:id", getJoinRequestsByStudent)
+  app.get("/team/:id/requests/", getJoinRequestsByTeam)
+
+  app.put("/requests", addPlayerByReq)
   
   app.listen(8800, () => {
     console.log("Connected to backend.");

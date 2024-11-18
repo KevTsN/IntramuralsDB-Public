@@ -11,14 +11,15 @@ export const useStudentStore = create((
     last: "",
     teams: [],
     leagues: [],
+    outRequests: [],
     // teamMap: new Map(Number, Object),
     updateID: (id) => set(() => ({ studentID: id })),
     updateGender: (gen) => set(() => ({ gender: gen })),
     updateFirst: (nf) => set(() => ({ first: nf })),
     updateLast: (nl) => set(() => ({ last: nl })),
     updateTeams: (tms) => set(()=>({teams: tms})),
-    updateLeagues: (lgs) => set(()=>({leagues: lgs}))
-
+    updateLeagues: (lgs) => set(()=>({leagues: lgs})),
+    updateRequests: (rqs) => set(()=>({outRequests: rqs}))
   }),
   {
     name: 'student-storage',
@@ -62,12 +63,14 @@ persist((set, get) =>({
   captainSID: 0,
   newCapID: 0,
   playersList: [],
+  requestsList: [],
   updateName : (nv) => set(() => ({name: nv})),
   updateTeamID : (nv) => set(() => ({teamID: nv})),
   updateLeagueID : (nv) => set(() => ({leagueID: nv})),
   updateNumPlayers : (nv) => set(() => ({numPlayers: nv})),
   updateCaptainSID : (nv) => set(() => ({captainSID: nv})),
   updatePlayers: (na) => set(() => ({playersList: na})),
+  updateRequests: (na) => set(() => ({requestsList: na})),
   updateNewCap: (nv) => set(() => ({newCapID: nv})) 
 }),
 {

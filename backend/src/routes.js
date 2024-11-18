@@ -422,3 +422,82 @@ export async function deleteTeam(req, res){
     return res.json(data);      
   })
 }
+
+export function addJoinRequest(req,res){
+  const studentID = req.body.studentID;
+  const teamID = req.body.teamID;
+  let q = `insert into join_requests (studentID, teamID) values (${studentID}, ${teamID})`
+  db.query(q, (err,data)=>{
+    if (err) return res.send(err);  
+    return res.json(data);      
+  })
+}
+
+export function getJoinRequestsByTeam(req,res){
+  const teamID = req.params.id;
+  let q = `select join_requests.*, students.firstName, students.lastName, students.gender from join_requests left join students on (join_requests.studentID = students.studentID) where join_requests.teamID = ${teamID};`
+  db.query(q, (err,data)=>{
+    if (err) return res.send(err);  
+    return res.json(data);      
+  })
+}
+
+export function getJoinRequestsByStudent(req,res){
+  const studentID = req.params.id;
+  let q = `select join_requests.*, teams.name, leagues.sport, leagues.genders from join_requests inner join teams on 
+  (teams.teamID = join_requests.teamID) left join leagues on (leagues.leagueID=teams.teamID) 
+  where join_requests.studentID=${studentID}`;
+
+  //im just imagining with this one ngl
+  db.query(q, (err,data)=>{
+    if (err) return res.send(err);  
+    return res.json(data);      
+  })
+}
+
+export function deleteJoinRequest(req,res){
+  const studentID = req.body.studentID;
+  const teamID = req.body.teamID;
+
+  let q = `delete from join_requests where (teamID=${teamID} and studentID=${studentID})`;
+  db.query(q, (err,data)=>{
+    if (err) return res.send(err);  
+    return res.json(data);      
+  })
+}
+
+export async function addPlayerByReq(req,res){
+  const studentID = req.body.studentID;
+  const teamID = req.body.teamID;
+
+  let q = `delete from join_requests where (teamID=${teamID} and studentID=${studentID})`;
+  db.query(q, (err,data)=>{
+    if (err) return res.send(err);  
+  })
+
+  //adding player to team now
+  //this should deadass be refactored.
+  //especially considering the fact 
+
+  q = `SELECT teams.leagueID from teams LEFT JOIN leagues on (teams.leagueID = leagues.leagueID) where teamID=${teamID};`;
+
+  // if(await canJoin(teamID, studentID) === false){
+  //   return false;
+  // }
+
+  let leagueID = await getLeagueId(q)
+
+  let PlayerIDCalc = parseInt(`${studentID}${leagueID}`)
+  PlayerIDCalc = Math.floor(PlayerIDCalc%1000000000);
+  //like srsly bro fix the primary key
+  
+  q = `UPDATE teams set numPlayers = numPlayers + 1 where teamID=${teamID}`
+  db.query(q, (err, data) => {})
+
+  q = `INSERT INTO players (studentID, teamID, playerID) values (${studentID},${teamID},${PlayerIDCalc})`
+  db.query(q, (err, data) => {
+      if (err) return res.send(err);
+      
+      return res.json(data);
+    })
+}
