@@ -235,6 +235,8 @@ export const TeamTableEntry = ({teamObj, view}) => {
     const stuGen =useStudentStore((state)=>state.gender)
     const reqs =useStudentStore((state)=>state.outRequests)
     const updateRequests =useStudentStore((state)=>state.updateRequests)
+    const stuTeams =useStudentStore((state)=>state.teams)
+
 
 
     const updateTeamRequests =useCurrTeamStore((state)=>state.updateRequests)
@@ -330,6 +332,14 @@ export const TeamTableEntry = ({teamObj, view}) => {
                 }
                 break;
             }
+
+            //this finna be some ass bruh
+            stuTeams.forEach(team => {
+                if(team.teamID == teamID){
+                    return setCanReq(false);
+                }
+            });
+            
 
             const fetchRequests = async() => {
                 {
@@ -555,8 +565,10 @@ const LeagueTableEntry = ({leagueObj, setIndex, currInd, setView, setTeams}) => 
     const updateLevel = useCurrLeagueStore(useShallow((state) => state.updateLevel));
 
     const stuGender=useStudentStore((state)=>state.gender)
-    const canJoinGender = useRef(true);
+    const stuTeams=useStudentStore((state)=>state.teams)
 
+    const canJoinGender = useRef(true);
+    const notInLeague = useRef(true);
     const navigate = useNavigate()
 
     let sportIcon = null;
@@ -575,16 +587,19 @@ const LeagueTableEntry = ({leagueObj, setIndex, currInd, setView, setTeams}) => 
             break;
         }
 
-    switch(gender){
-        case "Male":
-            if(stuGender != "M")
-                canJoinGender.current = false;
-            break;
-        case "Female":
-            if(stuGender != "F")
-                canJoinGender.current = false;
-            break;
-    }
+        switch(gender){
+            case "Male":
+                if(stuGender != "M")
+                    canJoinGender.current = false;
+                break;
+            case "Female":
+                if(stuGender != "F")
+                    canJoinGender.current = false;
+                break;
+        }
+    
+
+
 
 
     function handleClick(){
@@ -609,6 +624,19 @@ const LeagueTableEntry = ({leagueObj, setIndex, currInd, setView, setTeams}) => 
     const effectRan = useRef(false)
     useEffect(()=>{
        if(!effectRan.current){
+
+
+
+        stuTeams.forEach(element => {
+            console.log(element)
+            console.log(leagueID)
+            if(element.leagueID == leagueID){
+                notInLeague.current = false;
+                return;
+            }
+        });
+
+
             if(goingToView){
                 const fetchTeams = async() => {
                     {
@@ -638,7 +666,8 @@ const LeagueTableEntry = ({leagueObj, setIndex, currInd, setView, setTeams}) => 
                 <p className="team-league-info">Max players: {maxPlayers}, {numTeams}/{maxTeams} teams</p>
             </div>
             <div className="entry-btns" id="league-btns">
-            {canJoinGender.current && <button onClick={handleClick}>Create Team</button>}
+            {canJoinGender.current && notInLeague.current && <button onClick={handleClick}>Create Team</button>}
+            {/* {canJoinGender.current == false && <p>Ineligible to join.</p>} */}
             {numTeams > 0 && <button onClick={handleJoinClick}>View Teams</button>}
             </div>
 

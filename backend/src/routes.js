@@ -56,10 +56,11 @@ export function leagues(req, res) {
   }
 
     export function playerByID (req, res) {
-    const playerID = req.params.id;
-    const q = " SELECT * FROM players WHERE playerID = ? ";
+
+    //const playerID = req.params.id;
+    const q = " SELECT * FROM players " //WHERE playerID = ? ";
   
-    db.query(q, [playerID], (err, data) => {
+    db.query(q, (err, data) => {
       if (err) return res.send(err);
       return res.json(data);
     });
@@ -111,7 +112,8 @@ export function teamsByLeague(req, res) {
 
 export function availableLeagues(req,res){
   const studentID = req.params.id;
-  const q = `SELECT DISTINCT leagues.* from players INNER JOIN teams ON (players.teamID = teams.teamID and players.studentID = ${studentID}) RIGHT JOIN leagues ON (leagues.leagueID = teams.leagueID) where studentID IS NULL and leagues.numTeams<leagues.maxTeams`
+  // const q = `SELECT DISTINCT leagues.* from players INNER JOIN teams ON (players.teamID = teams.teamID and players.studentID = ${studentID}) RIGHT JOIN leagues ON (leagues.leagueID = teams.leagueID) where studentID IS NULL and leagues.numTeams<leagues.maxTeams`
+  const q = `select * from leagues`;
   db.query(q,  (err, data) => {
     if (err) return res.send(err);
     return res.json(data);
@@ -205,9 +207,8 @@ export async function createTeam(req,res){
     if(err)
       console.log(err)
   })
-  let PlayerIDCalc = parseInt(`${values[3]}${values[2]}`)
-  PlayerIDCalc = Math.floor(PlayerIDCalc%1000000000);
-  q = `INSERT INTO players (playerID, teamID, studentID) values (${PlayerIDCalc},${values[1]},${values[3]})`
+
+  q = `INSERT INTO players (leagueID, teamID, studentID) values (${values[2]},${values[1]},${values[3]})`
   db.query(q, (err, data) => {
       if (err) {
         console.log(err)
@@ -300,15 +301,15 @@ export async function studentJoinTeam(req,res){
 
     let leagueID = await getLeagueId(q)
 
-    let PlayerIDCalc = parseInt(`${values[0]}${leagueID}`)
-    PlayerIDCalc = Math.floor(PlayerIDCalc%1000000000);
+    // let PlayerIDCalc = parseInt(`${values[0]}${leagueID}`)
+    // PlayerIDCalc = Math.floor(PlayerIDCalc%1000000000);
     //honestly i just did this bc my original thought was a humongous int lol
     //kinda low chance that it still finds a dupe number lol
     
     q = `UPDATE teams set numPlayers = numPlayers + 1 where teamID=${values[1]}`
     db.query(q, (err, data) => {})
 
-    q = `INSERT INTO players (studentID, teamID, playerID) values (${values[0]},${values[1]},${PlayerIDCalc})`
+    q = `INSERT INTO players (studentID, teamID, leagueID) values (${values[0]},${values[1]},${leagueID})`
     db.query(q, (err, data) => {
         if (err) return res.send(err);
         
@@ -341,14 +342,12 @@ export async function studentLeaveTeam(req,res){
         if (err) return res.send(err);
       })
 
-      q = `delete from players where teamID=${values[1]}`
+      q = `delete from players where (teamID=${values[1]} and studentID =${values[0]}`
       db.query(q, (err,data)=>{        
       })
     }
 
 
-    let PlayerIDCalc = parseInt(`${values[0]}${leagueID}`)
-    PlayerIDCalc = Math.floor(PlayerIDCalc%1000000000);
     q = `UPDATE teams set numPlayers = numPlayers - 1 where teamID=${values[1]}`
     db.query(q, (err, data) => {
       if (err) return res.send(err);
@@ -476,6 +475,8 @@ export async function addPlayerByReq(req,res){
     if (err) return res.send(err);  
   })
 
+
+
   //adding player to team now
   //this should deadass be refactored.
   //especially considering the fact 
@@ -488,14 +489,17 @@ export async function addPlayerByReq(req,res){
 
   let leagueID = await getLeagueId(q)
 
-  let PlayerIDCalc = parseInt(`${studentID}${leagueID}`)
-  PlayerIDCalc = Math.floor(PlayerIDCalc%1000000000);
-  //like srsly bro fix the primary key
+  //delete where this player already in league
+
+  q = `delete from players where (leagueID=${leagueID} and studentID=${studentID})`;
+  db.query(q, (err,data)=>{
+    if (err) return res.send(err);  
+  })
   
   q = `UPDATE teams set numPlayers = numPlayers + 1 where teamID=${teamID}`
   db.query(q, (err, data) => {})
 
-  q = `INSERT INTO players (studentID, teamID, playerID) values (${studentID},${teamID},${PlayerIDCalc})`
+  q = `INSERT INTO players (studentID, teamID, leagueID) values (${studentID},${teamID},${leagueID})`
   db.query(q, (err, data) => {
       if (err) return res.send(err);
       
