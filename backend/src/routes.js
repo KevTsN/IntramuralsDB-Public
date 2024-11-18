@@ -135,7 +135,7 @@ export function checkLogin(req,res){
     const id = req.params.id
     const pw = req.params.password;
 
-    const q = `SELECT studentID, firstName, lastName, gender from students where (studentID = ${id} AND password="${pw}");`
+    const q = `SELECT studentID, firstName, lastName, gender from students where (studentID = ${id} AND password= CONVERT('${pw}' USING utf8mb4) COLLATE utf8mb4_bin);`
     db.query(q,  (err, data) => {
       if (err) return res.send(err);
       return res.json(data);
