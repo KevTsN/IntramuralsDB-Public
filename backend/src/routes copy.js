@@ -3,14 +3,6 @@ import dotenv from 'dotenv';
 dotenv.config();
 import sqlite3 from 'sqlite3';
 const db = new sqlite3.Database('./sql/database.db');
-//var sqlPass = process.env.mySqlPass
-
-// const db = mysql.createConnection({
-//     host:"localhost",
-//     user: "root",
-//     password:sqlPass,
-//     database: "tablecreation"
-// })
 
 export function leagues(req, res) {
     const q = "SELECT * FROM leagues";
@@ -63,7 +55,7 @@ export function leagues(req, res) {
   export function playerByID (req, res) {
 
     //const playerID = req.params.id;
-    const q = " SELECT * FROM players " //WHERE playerID = ? ";
+    const q = " SELECT * FROM players " // used to be WHERE playerID = ? ";
   
     db.all(q, (err, rows) => {
       if (err) {
@@ -77,7 +69,7 @@ export function leagues(req, res) {
 
  export function studentByID(req, res) {
     const studentID = req.params.id;
-    const q = " SELECT * FROM students WHERE studentID = ? ";
+    const q = `SELECT * FROM students WHERE studentID = ${studentID} `;
   
     db.all(q, (err, rows) => {
       if (err) {
@@ -91,7 +83,7 @@ export function leagues(req, res) {
 
 export function teamByID(req, res) {
     const teamID = req.params.id;
-    const q = " SELECT teams.*, leagues.genders, leagues.maxPlayers from teams join leagues ON (teams.leagueID = leagues.leagueID) WHERE teamID = ? ";
+    const q = ` SELECT teams.*, leagues.genders, leagues.maxPlayers from teams join leagues ON (teams.leagueID = leagues.leagueID) WHERE teamID = ${teamID} `;
   
     db.all(q, (err, rows) => {
       if (err) {
@@ -105,7 +97,7 @@ export function teamByID(req, res) {
 
 export function teamsByLeague(req, res) {
   const leagueID = req.params.id;
-  const q = " SELECT teams.*, leagues.genders, leagues.sport from teams left join leagues ON (teams.leagueID = leagues.leagueID) WHERE teams.leagueID = ? ";
+  const q = ` SELECT teams.*, leagues.genders, leagues.sport from teams left join leagues ON (teams.leagueID = leagues.leagueID) WHERE teams.leagueID = ${leagueID} `;
 
   db.all(q, (err, rows) => {
     if (err) {
@@ -210,13 +202,14 @@ export async function createTeam(req,res){
     req.body.captainID,
   ];
 
-  
   let q = `INSERT INTO teams (teamID, leagueID, captainSID)
   values ( ${values[1]}, ${values[2]}, ${values[3]})`;
-  db.exec(q, function(err){ if(err) return res.send(err);})
-
+  db.exec(q, function(err){ if(err) 
+    { 
+      return res.send(err);}
+  })
+  
   if(await checkLeagueForName(values[1], values[0]) == true){
-    console.log("wuh-woh")
     q = `delete from teams where teamID=${values[1]}`;
     db.exec(q, function(err){ if(err) return res.send(err);})
     return res.send("There is already a team with this name.");
@@ -233,61 +226,66 @@ export async function createTeam(req,res){
   db.exec(q, function(err){ if(err) return res.send(err);})
 }
 
-async function getLeagueId(query){
-  const [rows,fields] = await db.promise().query(query);
-  return rows[0]['leagueID'];
+async function getLeagueId(teamID){
+  let q = `SELECT teams.leagueID from teams LEFT JOIN leagues on (teams.leagueID = leagues.leagueID) where teamID=${teamID}`;
+
+  return new Promise((resolve,reject)=>{
+    db.get(q, (err,row)=>{
+      if(err) reject(err);
+        resolve(row.leagueID)
+    })
+  })
 }
+
 
 async function isTeamFull(teamID){
   //use a specific query ofc
   let q = `SELECT numPlayers from teams LEFT JOIN leagues ON teams.leagueID = leagues.leagueID where teams.numPlayers>=leagues.maxPlayers and teams.teamID = ${teamID};`
-  const [rows,fields]=await db.promise().query(q);
-
-  if(rows.affectedRows < 1)
-    return false;
-
-  let mbappe = rows.pop();
-
-  if(mbappe !== undefined)
-    return true;
-  return false;
+  return new Promise((resolve,reject)=>{
+    db.get(q, (err,row)=>{
+      if(err) reject(err);
+        resolve(row !== undefined)
+    })
+  })
+  
 }
 
 //functions i need to update for sqlite
 async function willTeamEmpty(teamID){
   let q = `SELECT numPlayers from teams where (teamID=${teamID} and numPlayers < 2)`;
-  const [rows,fields]=await db.promise().query(q);
-    if(rows.length > 0)
-      return true;
-    return false;
+
+    return new Promise((resolve, reject) => {
+      db.all(q,(err, rows) => {
+          if (err) reject(err);
+          resolve(rows.length > 0);
+      });
+  });
 }
 
 
 async function allowedGender(teamID, studentID){
   let q = `SELECT leagues.genders, teams.teamID from leagues LEFT JOIN teams on (leagues.leagueID = teams.leagueID) where teams.teamID = ${teamID}`
-  const [rows,fields] = await db.promise().query(q);
 
-  // if(rows.affectedRows < 1)
-  //   return false;
-
-  let leagueGenders = rows[0]['genders'];
-  q = `SELECT gender from students where studentID = ${studentID}`
-  const [crows,seals] = await db.promise().query(q);
-
-  // if(crows.affectedRows < 1)
-  //   return false;
-
-  let studentGender = crows[0]['gender'];
-  //console.log(`league: ${leagueGenders}, student: ${studentGender}`)
-  let returnVal = true;
-  switch(leagueGenders){
-      case "Male":
-        return (studentGender == "M");
-        
-      case "Female":
-        return (studentGender == "F");
-  }
-  return true;
+  return new Promise((resolve, reject) => {
+    db.get(q,(err, row) => {
+        if (err) reject(err);
+        let leagueGenders = row['genders']
+        //leagueGenders now
+        q = `SELECT gender from students where studentID = ${studentID}`
+        db.get(q,(err, row) => {
+          if (err) reject(err);
+          studentGender = row['gender'];
+          switch(leagueGenders){
+            case "Male":
+              resolve(studentGender == "M");
+              break;
+            case "Female":
+              resolve(studentGender == "F")
+              break;
+          }
+      });
+    });
+});
 }
 
 async function canJoin(teamID, studentID){
@@ -302,6 +300,8 @@ async function canJoin(teamID, studentID){
   return true;
 }
 
+//
+
 export async function studentJoinTeam(req,res){
     const values = [
         req.body.studentID,
@@ -315,7 +315,7 @@ export async function studentJoinTeam(req,res){
       return false;
     }
 
-    let leagueID = await getLeagueId(q)
+    let leagueID = await getLeagueId(values[1])
 
     // let PlayerIDCalc = parseInt(`${values[0]}${leagueID}`)
     // PlayerIDCalc = Math.floor(PlayerIDCalc%1000000000);
@@ -339,8 +339,8 @@ export async function studentLeaveTeam(req,res){
     ]
     
     //will team be empty
-    let q = `SELECT teams.leagueID from teams LEFT JOIN leagues on (teams.leagueID = leagues.leagueID) where teamID=${values[1]}`;
-    let leagueID = await getLeagueId(q);
+    let q = ''
+    let leagueID = await getLeagueId(values[1]);
 
     if(await willTeamEmpty(values[1]) == true){
       console.log(`The team with ID ${values[1]} will be deleted because there are no more players left.`)
@@ -364,15 +364,27 @@ export async function studentLeaveTeam(req,res){
 }
 
 export async function checkLeagueForName(teamID, name){
+  
   let q = `select leagueID from teams where teamID=${teamID}`
-  let [rows,fields] = await db.promise().query(q);
-  let leagueId = rows.pop()['leagueID']
-  q = `select * from teams where leagueID=${leagueId} and name="${name}"`
-  let [crows,seals] = await db.promise().query(q);
+  return new Promise((resolve, reject) => {
+    db.get(q, (err,row)=>{
+      if(err) reject (err)
+      if(row === undefined)
+        { return resolve(row === undefined)}
 
-  //returns if there is an existing row
-  return (crows.pop() !== undefined)
-
+      
+      if(row['leagueID'] === undefined){
+        return resolve(row['leagueID'] === undefined)
+        //lowe it bro
+      }
+      let leagueID = row['leagueID']
+      q = `select * from teams where leagueID=${leagueID} and name="${name}"`
+      db.get(q, (err,row)=>{
+        if(err) reject (err)
+        resolve(row !== undefined)
+      })
+    })
+  })
 }
 
 
@@ -402,7 +414,9 @@ export async function deleteTeam(req, res){
   const teamID = req.body.teamID;
 
   let q = `SELECT teams.leagueID from teams LEFT JOIN leagues on (teams.leagueID = leagues.leagueID) where teamID=${teamID}`;
-  let leagueID = await getLeagueId(q);
+  //lame lol
+
+  let leagueID = await getLeagueId(teamID);
 
   console.log(`The team with ID ${teamID} is being deleted.`)
 
@@ -480,7 +494,7 @@ export async function addPlayerByReq(req,res){
   //   return false;
   // }
 
-  let leagueID = await getLeagueId(q)
+  let leagueID = await getLeagueId(teamID)
 
   //delete where this player already in league
 
