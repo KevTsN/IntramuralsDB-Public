@@ -16,7 +16,7 @@ import {leagues, availableLeagues,playerByID, players,
     addJoinRequest, 
     deleteJoinRequest, addPlayerByReq,
     getJoinRequestsByStudent,
-    getJoinRequestsByTeam} from "./src/routes.js"
+    getJoinRequestsByTeam} from "./src/routes copy.js"
     
   app.post("/students", registerStudent);
   app.post("/teams", createTeam)
