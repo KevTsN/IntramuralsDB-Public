@@ -25,7 +25,7 @@ const navigate = useNavigate()
   const [createdMessage, setMessage] = useState('')
   const effectRan = useRef(false)
   const onCreateClick = () => {
-    console.log('cleek')
+    effectRan.current = false;
     setCreated(false)
     setNameError('')
     if(!/^[a-zA-Z ]{4,30}$/.test(name)){
@@ -33,10 +33,11 @@ const navigate = useNavigate()
         return;
     }
     setCreated(true)
+    setMessage("");
   }
   
   useEffect(()=>{
-    // if(effectRan.current == false){
+    if(effectRan.current == false){
 
     if(created){
 
@@ -54,6 +55,12 @@ const navigate = useNavigate()
             })
         }
         fetchPotentialError();
+        if(nameInLeague){
+            console.log('huh')
+            return () => {
+                effectRan.current = true;
+            }
+        }
 
         const createTeam = async() => {
         let calcID = Math.floor(Math.random() * 9999999) + 1000000;
@@ -71,25 +78,30 @@ const navigate = useNavigate()
             }),
             headers: myHeaders,
         });
-        console.log('wagwan')
+
         if(!response.ok){
-                setMessage("Something went wrong creating your team. Please try again.")
+                setMessage("Something went wrong creating your team.")
                 setCreated(false)
-                // effectRan.current = false;
+                effectRan.current = true;
             }
             else{
-                setMessage("Your team was created.")
-                // effectRan.current = true;
+                setMessage("Your team was created. Redirecting.")
+                effectRan.current = true;
                 setTimeout(()=>{
-                    navigate('/home')}, "2 seconds")
+                    navigate('/home')}, "4 seconds")
             }
         }
 
-        if(!nameInLeague)
-            createTeam(); //if the name doesn't exist in the league, create
+        createTeam();
+
+        return () => {
+            effectRan.current = true;
+        }
     }
 // }
-  })
+        }
+    }
+    )
   function onBack() {
     navigate('/home')
   }
@@ -144,8 +156,9 @@ const navigate = useNavigate()
                 <br/>
                {<div className={'input-container'}>
                     <input className={'input-button'} style={{width:"50%", margin: "auto"}} type="button" onClick={onCreateClick} value={'Create Team'} />
+                    <label style={{margin: "6px auto", height: "24px"}}>{createdMessage}</label>
                 </div>}
-                <label>{createdMessage}</label>
+                
                 
             </div>
          </div>

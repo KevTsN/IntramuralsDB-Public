@@ -187,7 +187,10 @@ export function registerStudent(req,res){
     const q = `INSERT INTO students (studentID, password, gender, firstName, lastName)
     values (${values[0]}, "${values[1]}", "${values[2]}", "${values[3]}", "${values[4]}")`;
   
-    db.exec(q, function(err){ if(err) return res.send(err);})
+    db.exec(q, function(err){ 
+      if(err) return res.send(err);
+      res.sendStatus(200);
+    })
 
  
 }
@@ -212,7 +215,9 @@ export async function createTeam(req,res){
   if(await checkLeagueForName(values[1], values[0]) == true){
     q = `delete from teams where teamID=${values[1]}`;
     db.exec(q, function(err){ if(err) return res.send(err);})
-    return res.send("There is already a team with this name.");
+      return res.status(400).send({
+        message: 'A team already exists with this name.'
+     });
   }
 
   q=`update teams set name="${values[0]}" where teamID=${values[1]}`;
@@ -223,7 +228,10 @@ export async function createTeam(req,res){
   db.exec(q, function(err){ if(err) return res.send(err);})
 
   q = `INSERT INTO players (leagueID, teamID, studentID) values (${values[2]},${values[1]},${values[3]})`
-  db.exec(q, function(err){ if(err) return res.send(err);})
+  db.exec(q, function(err){ 
+    if(err) return res.send(err);
+    res.sendStatus(200);
+  })
 }
 
 async function getLeagueId(teamID){
@@ -326,7 +334,10 @@ export async function studentJoinTeam(req,res){
     db.exec(q, function(err){ if(err) return res.send(err);})
 
     q = `INSERT INTO players (studentID, teamID, leagueID) values (${values[0]},${values[1]},${leagueID})`
-    db.exec(q, function(err){ if(err) return res.send(err);})
+    db.exec(q, function(err){ 
+      if(err) return res.send(err);
+      res.sendStatus(200);
+    })
     return true;
 }
 
@@ -360,7 +371,10 @@ export async function studentLeaveTeam(req,res){
     db.exec(q, function(err){ if(err) return res.send(err);})
 
     q = `DELETE FROM players where (studentID = ${values[0]} and teamID=${values[1]})`
-    db.exec(q, function(err){ if(err) return res.send(err);})
+    db.exec(q, function(err){ 
+      if(err) return res.send(err);
+      res.sendStatus(200);
+    })
 }
 
 export async function checkLeagueForName(teamID, name){
@@ -370,17 +384,18 @@ export async function checkLeagueForName(teamID, name){
     db.get(q, (err,row)=>{
       if(err) reject (err)
       if(row === undefined)
-        { return resolve(row === undefined)}
+        { return resolve(false)}
 
       
       if(row['leagueID'] === undefined){
-        return resolve(row['leagueID'] === undefined)
+        return resolve(false)
         //lowe it bro
       }
       let leagueID = row['leagueID']
       q = `select * from teams where leagueID=${leagueID} and name="${name}"`
       db.get(q, (err,row)=>{
         if(err) reject (err)
+          console.log(row)
         resolve(row !== undefined)
       })
     })
@@ -406,7 +421,10 @@ export async function updateTeam(req,res){
 
   }
   q = `UPDATE teams set captainSID = ${bodyObj['captainID']} where teamID=${bodyObj['teamID']}`
-  db.exec(q, function(err){ if(err) return res.send(err);})
+  db.exec(q, function(err){ 
+    if(err) return res.send(err);
+    res.sendStatus(200);
+  })
   
 }
 
@@ -427,14 +445,20 @@ export async function deleteTeam(req, res){
   db.exec(q, function(err){ if(err) return res.send(err);})
 
   q = `delete from players where teamID=${teamID}`
-  db.exec(q, function(err){ if(err) return res.send(err);})
+  db.exec(q, function(err){ 
+    if(err) return res.send(err);
+    res.sendStatus(200);
+  })
 }
 
 export function addJoinRequest(req,res){
   const studentID = req.body.studentID;
   const teamID = req.body.teamID;
   let q = `insert into join_requests (studentID, teamID) values (${studentID}, ${teamID})`
-  db.exec(q, function(err){ if(err) return res.send(err);})
+  db.exec(q, function(err){ 
+    if(err) return res.send(err)
+    res.sendStatus(200);
+    ;})
 }
 
 export function getJoinRequestsByTeam(req,res){
@@ -472,7 +496,9 @@ export function deleteJoinRequest(req,res){
   const teamID = req.body.teamID;
 
   let q = `delete from join_requests where (teamID=${teamID} and studentID=${studentID})`;
-  db.exec(q, function(err){ if(err) return res.send(err);})
+  db.exec(q, function(err){ if(err) return res.send(err)
+    res.sendStatus(200);
+    })
 }
 
 export async function addPlayerByReq(req,res){
@@ -507,27 +533,8 @@ export async function addPlayerByReq(req,res){
   q = `INSERT INTO players (studentID, teamID, leagueID) values (${studentID},${teamID},${leagueID})`
   db.exec(q, function(err){
     if(err) return res.send(err);
-    //lol wheres json buddy
-      //
+    res.sendStatus(200);
+
     })
 }
 
-
-
-/*
-db.exec(q, function(err){
-  if(err) return res.send(err);
-    //
-  })
-*/
-
-/*
-db.all(q, (err, rows) => {
-    if (err) {
-      console.error(err.message);
-      res.status(500).send('Internal server error');
-    } else {
-      res.send(rows);
-    }
-  });
-  */

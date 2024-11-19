@@ -16,14 +16,13 @@ export function Home(){
     const navigate = useNavigate()
     
 
-    const [confirmChanges, setConfirmChanges] = useState(false)
     const teams=useStudentStore((state)=>state.teams)
     const updateTeams = useStudentStore((state) => state.updateTeams)
     const leagues=useStudentStore((state)=>state.leagues)
     const updateLeagues = useStudentStore((state) => state.updateLeagues)
     const updateRequests =useStudentStore((state)=>state.updateRequests)
 
-    const stuGen=useStudentStore((state)=>state.gender)
+    // const stuGen=useStudentStore((state)=>state.gender)
 
     const sid =useStudentStore((state)=>state.studentID)
 
@@ -32,30 +31,18 @@ export function Home(){
     function onLogOut() {
         navigate('/logout')
       }
-    const [newTeamID, setNewTeamID] = useState("")
-    const [teamIdError, setTeamIdError] = useState("")
 
-    const [joinShow, setJoinShow] = useState(false)
     const [leagueShow, setLeagueShow] = useState(false)
     //keep as string for sql query
 
-    const [numTeams,setNumTeams] = useState(teams.length); //for rerendering i suppose
+    // const [numTeams,setNumTeams] = useState(teams.length); //for rerendering i suppose
 
     const fullName = localStorage.getItem("fullName")
-    const [joinAttempt, setJoinAttempt] = useState(false)
 
     //console.log(teams)
 
     const effectRan = useRef(false)
 
-    function onJoinClick(){
-        if('' === newTeamID){
-            setTeamIdError("Please enter a valid team ID.");
-            return;
-        }
-        setJoinAttempt(true) 
-        effectRan.current = false;    
-    }
     useEffect(()=>{
     
         if(!effectRan.current){
@@ -92,73 +79,13 @@ export function Home(){
             }
             fetchRequests();
 
-        if(joinAttempt){
-            setTeamIdError("")
-            const fetchTeam = async() => {
-                    const url = `http://localhost:8800/teams/${newTeamID}`
-                    const result = await fetch(url);
-                    result.json().then(json => {
-                        let jason = json[0]
-                        
-                        if(jason){
-
-                            if(jason['maxPlayers'] <= jason['numPlayers']){
-                                setTeamIdError("This team has reached maximum capacity.")
-                                return;
-                            }
-                            if(canJoinGender(jason['genders'], stuGen) == false){
-                                setTeamIdError(`Gender restrictions prevent you from joining this team. The specified team gender is ${jason['genders'].toLowerCase()}.`)
-                                return;
-                            }
-
-                            teams.forEach(team => {
-                                if(team['teamID'] == newTeamID){
-                                    setTeamIdError(`You've already joined the team \"${team['name']}\".`)
-                                    return;
-                                }
-                            });
-
-
-                            const joinTeam = async() => {
-                                const myHeaders = new Headers();
-                                myHeaders.append("Content-Type", "application/json");
-    
-                                const response = await fetch("http://localhost:8800/players", {
-                                method: "POST",
-                                // 
-                                body: JSON.stringify({ 
-                                    studentID: sid,
-                                    teamID: newTeamID,
-                                }),
-
-                                headers: myHeaders,
-                                 });
-                                 setNumTeams(numTeams+1)
-                            } 
-                            joinTeam();
-                            setTeamIdError("Joining team.")
-                            setTimeout(()=>{
-                                window.location.reload();
-                            })
-                            
-                            
-                        }
-                        else{
-                            setTeamIdError('No team exists with this ID.')
-                        }
-                    })
-            }
-            fetchTeam();
-        }
-
-        setJoinAttempt(false);
         return()=>{
             effectRan.current = true;
         }
     
         }
         
-    }, [joinAttempt])
+    })
 
 
     return(
@@ -407,7 +334,7 @@ export const TeamTableEntry = ({teamObj, view}) => {
                 } 
                 leaveTeam();
                 setLeaveConfirm(false);
-                window.location.reload();
+                //window.location.reload();
             }
 
             if(request == true){
