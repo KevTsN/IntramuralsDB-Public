@@ -163,6 +163,8 @@ export const TeamTableEntry = ({teamObj, view}) => {
     const reqs =useStudentStore((state)=>state.outRequests)
     const updateRequests =useStudentStore((state)=>state.updateRequests)
     const stuTeams =useStudentStore((state)=>state.teams)
+    const updateTeams =useStudentStore((state)=>state.updateTeams)
+
 
 
 
@@ -266,7 +268,18 @@ export const TeamTableEntry = ({teamObj, view}) => {
                     return setCanReq(false);
                 }
             });
-            
+
+            // const fetchTeams = async() => {
+            //     {
+            //         const url = `http://localhost:8800/teams/student/${sid}`
+            //         const result = await fetch(url);
+            //         result.json().then(json => {
+            //             updateTeams(json)
+            //         })
+            //     }
+            // }
+            // fetchTeams();
+
 
             const fetchRequests = async() => {
                 {
@@ -278,14 +291,13 @@ export const TeamTableEntry = ({teamObj, view}) => {
                 }
             }
             fetchRequests();
+
+
             reqs.forEach(element => {
                 if(element.teamID == teamID){
                     return setDupeReq(true);
                 }
             });
-            //setRequest(true);
-            //request btn doesnt render smooth
-
             if(editClicked){
                 //console.log(teamID)
                 const fetchPlayers = async() => {
@@ -298,17 +310,6 @@ export const TeamTableEntry = ({teamObj, view}) => {
                             })
                         }
                     fetchPlayers();
-
-                    const fetchTeamRequests = async() => {
-                        const result = await fetch(`http://localhost:8800/team/${teamID}/requests/`, {
-                            
-                        })
-                        result.json().then(json => {
-                            console.log(json)
-                                updateTeamRequests(json);
-                            })
-                        }
-                    fetchTeamRequests();
 
             navigate('/teamedit');
             }
@@ -334,6 +335,7 @@ export const TeamTableEntry = ({teamObj, view}) => {
                 } 
                 leaveTeam();
                 setLeaveConfirm(false);
+                fetchTeams();
                 //window.location.reload();
             }
 
@@ -379,11 +381,11 @@ export const TeamTableEntry = ({teamObj, view}) => {
                         setDupeReq(false);
                         setRequest(false);
                         setDelete(false);
+                        fetchRequests();
                     }
                 } 
                 deleteRequest();
-                fetchRequests();
-
+                // fetchTeams();
             }
             return() => {
                 effectRan.current = true;
