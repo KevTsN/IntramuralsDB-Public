@@ -441,6 +441,9 @@ export async function deleteTeam(req, res){
   q = `delete from teams where teamID=${teamID}`;
   db.exec(q, function(err){ if(err) return res.send(err);})
 
+  q = `delete from join_requests where teamID=${teamID}`;
+  db.exec(q, function(err){ if(err) return res.send(err);})
+
   q = `update leagues set numTeams=numTeams -1 where leagueID=${leagueID}`;
   db.exec(q, function(err){ if(err) return res.send(err);})
 
@@ -506,7 +509,10 @@ export async function addPlayerByReq(req,res){
   const teamID = req.body.teamID;
 
   let q = `delete from join_requests where (teamID=${teamID} and studentID=${studentID})`;
-  db.exec(q, function(err){ if(err) return res.send(err);})
+  db.exec(q, function(err){ 
+    if(err) return res.send(err);
+    res.sendStatus(200);
+  })
 
 
 
@@ -533,8 +539,6 @@ export async function addPlayerByReq(req,res){
   q = `INSERT INTO players (studentID, teamID, leagueID) values (${studentID},${teamID},${leagueID})`
   db.exec(q, function(err){
     if(err) return res.send(err);
-    res.sendStatus(200);
-
     })
 }
 

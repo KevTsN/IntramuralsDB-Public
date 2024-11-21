@@ -396,23 +396,23 @@ const RequestTableEntry = ({requestObj}) => {
     
 
     useEffect(()=>{
-        if(effectRan.current == false){
-
-            const fetchTeamRequests = async() => {
-                const result = await fetch(`http://localhost:8800/team/${teamID}/requests/`, {
-                    
+        const fetchTeamRequests = async() => {
+            const result = await fetch(`http://localhost:8800/team/${teamID}/requests/`, {
+                
+            })
+            result.json().then(json => {
+                console.log(json)
+                    updateTeamRequests(json);
                 })
-                result.json().then(json => {
-                    console.log(json)
-                        updateTeamRequests(json);
-                    })
-                }
-            const fetchPlayers = async() => {
-                const result = await fetch(`http://localhost:8800/players/team/${teamID}`)
-                result.json().then(json => {
-                        updatePlayers(json);
-                    })
-                }
+            }
+        const fetchPlayers = async() => {
+            const result = await fetch(`http://localhost:8800/players/team/${teamID}`)
+            result.json().then(json => {
+                    updatePlayers(json);
+                })
+            }
+
+        if(effectRan.current == false){
             //fetchTeamRequests();
 
             if(accepted){
@@ -437,6 +437,9 @@ const RequestTableEntry = ({requestObj}) => {
                     }
                 }
                 acceptRequest();    
+                setDecline(false);
+                setAccept(false);
+                effectRan.current = false;
                 //state should be updated?
 
             }
@@ -456,10 +459,14 @@ const RequestTableEntry = ({requestObj}) => {
                     headers: myHeaders,
                     });
                     if (response.ok){
+                        setDecline(false);
+                        setAccept(false);
+                        effectRan.current = false;
                         fetchTeamRequests();
                     }
                 }
                 declineRequest();
+                
                 //state should be updated?
             }
             return()=>{

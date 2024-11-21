@@ -269,16 +269,16 @@ export const TeamTableEntry = ({teamObj, view}) => {
                 }
             });
 
-            // const fetchTeams = async() => {
-            //     {
-            //         const url = `http://localhost:8800/teams/student/${sid}`
-            //         const result = await fetch(url);
-            //         result.json().then(json => {
-            //             updateTeams(json)
-            //         })
-            //     }
-            // }
-            // fetchTeams();
+            const fetchTeams = async() => {
+                {
+                    const url = `http://localhost:8800/teams/student/${sid}`
+                    const result = await fetch(url);
+                    result.json().then(json => {
+                        updateTeams(json)
+                    })
+                }
+            }
+            fetchTeams();
 
 
             const fetchRequests = async() => {
@@ -564,8 +564,6 @@ const LeagueTableEntry = ({leagueObj, setIndex, currInd, setView, setTeams}) => 
 
 
         stuTeams.forEach(element => {
-            console.log(element)
-            console.log(leagueID)
             if(element.leagueID == leagueID){
                 notInLeague.current = false;
                 return;
@@ -619,3 +617,4 @@ LeagueTableEntry.propTypes = {
     setIndex: PropTypes.func,
     setTeams: PropTypes.func
 }
+
