@@ -89,7 +89,7 @@ export function Home(){
 
 
     return(
-        <div className="content" style={{alignItems: "center", width: "90%"}}>
+        <div className="content" style={{alignItems: "center"}}>
             <div id="home">
                 <h1>Carleton University Intramurals</h1>
                 <h2>Home</h2>
@@ -145,7 +145,7 @@ const TeamTable = ({teams, view}) =>{
             {view == "Student" &&   
                 <button style={{margin:"15px auto"}} onClick={()=>{setSched(!viewSched)}}> Toggle Viewing Schedules </button>}
             {viewSched && view=="Student" && 
-                <ScheduleTable studentID={sid}></ScheduleTable>
+                <ScheduleTable view="Student" id={sid}></ScheduleTable>
             }
         </div>
     )
@@ -626,7 +626,7 @@ LeagueTableEntry.propTypes = {
     setTeams: PropTypes.func
 }
 
-const ScheduleTable = ({studentID}) => {
+export const ScheduleTable = ({view, id}) => {
 
     const [loading, setLoading] = useState(true);
     const [gamesList, setGames] = useState([]);
@@ -635,19 +635,38 @@ const ScheduleTable = ({studentID}) => {
 
     useEffect(()=>{
         if(effectRan.current == false){
-            if(loading){
-                const fetchGames = async() => {
-                    const url = `http://localhost:8800/students/${studentID}/games`
-                    const result = await fetch(url);
-                    result.json().then(json => {
-                        setGames(json)
-                        indices.current = [...Array(json.length).keys()]
-                        setLoading(false);
-                    })
+            if(view == "Student"){
+                if(loading){
+                    const fetchGames = async() => {
+                        const url = `http://localhost:8800/students/${id}/games`
+                        const result = await fetch(url);
+                        result.json().then(json => {
+                            setGames(json)
+                            indices.current = [...Array(json.length).keys()]
+                            setLoading(false);
+                        })
+                    }
+                    fetchGames();
+                    effectRan.current = true;
                 }
-                fetchGames();
-                effectRan.current = true;
             }
+
+            if(view == "Team"){
+                if(loading){
+                    const fetchGames = async() => {
+                        const url = `http://localhost:8800/teams/${id}/games`
+                        const result = await fetch(url);
+                        result.json().then(json => {
+                            setGames(json)
+                            indices.current = [...Array(json.length).keys()]
+                            setLoading(false);
+                        })
+                    }
+                    fetchGames();
+                    effectRan.current = true;
+                }
+            }
+
            
 
         }
@@ -656,8 +675,11 @@ const ScheduleTable = ({studentID}) => {
 
     return(
         <>
-        {loading && <p>
-            Loading... </p>}
+        {loading && 
+        
+            <div style={{margin:"auto"}}>
+                <p>Fetching games... </p>
+            </div>}
         {!loading && 
             <div id = "schedule-table">
             {indices.current.map((e) => {
@@ -674,7 +696,7 @@ const ScheduleTable = ({studentID}) => {
 ScheduleTable.propTypes = {
     studentID: PropTypes.number
 }
-const Game = ({gameObj}) => {
+export const Game = ({gameObj}) => {
 
     let sportIcon = null;
     switch(gameObj.sport){

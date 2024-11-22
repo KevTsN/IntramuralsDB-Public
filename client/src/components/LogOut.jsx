@@ -40,7 +40,7 @@ export function LogOut(){
     // redirects after 2 seconds lol
 
     return(
-        <div className="content" style={{alignItems: "center", width: "90%"}}>
+        <div className="content" style={{alignItems: "center"}}>
             <div id="logout-cont">
                 <h1>Carleton University Intramurals</h1>
                 <h2>Logging out...</h2>

@@ -556,7 +556,8 @@ export async function getGames(req,res){
 
 export async function gamesForTeam(req,res){
   const teamID = req.params.id;
-  let q = `select games.*, leagues.* from games left join teams on (games.homeID = teams.teamID or games.awayID = teams.teamID) left where teams.teamID=${teamID}`
+  let q = `select games.gameTime, games.location, leagues.sport, leagues.genders, hm.name as homeName, aw.name as awayName from games left join teams as aw on (aw.teamID = games.awayID) left join teams as hm on (hm.teamID=games.homeID)
+   inner join leagues on (leagues.leagueID = games.leagueID) where (games.awayID=${teamID} or games.homeID=${teamID});`  
   db.all(q, (err,rows) => {
     if(err){
       console.error(err.message);

@@ -6,6 +6,7 @@ import { useStudentStore, useCurrTeamStore, useCurrLeagueStore } from "../Stores
 import { BackBtn } from "./Back"
 import { useShallow } from 'zustand/react/shallow'
 import {PropTypes} from 'prop-types'
+import { ScheduleTable } from "./Home"
 
 export function TeamEdit() {
 
@@ -62,6 +63,8 @@ export function TeamEdit() {
         setConfDelete(true);
         effectRan.current = false;
     }
+    
+    const [showSched, setSched] = useState(false)
     
     useEffect(()=>{
         console.log(captainChange)
@@ -202,12 +205,21 @@ export function TeamEdit() {
                     </div>
                     
                     <div className = "input-container-space">
-                        <label> <h3> Requests 
+                        <label id="label-margin"> <h3> Requests 
                             {reqShow && <FontAwesomeIcon id="toggle-join" icon={faCircleChevronUp} onClick={()=>{setReqShow(!reqShow)}} />}
                             {!reqShow && <FontAwesomeIcon id="toggle-join" icon={faCircleChevronDown} onClick={()=>{setReqShow(!reqShow)}} />}
                                 </h3> 
                         </label>
                         {reqShow && <RequestTable requests={requests} > </RequestTable>}
+                    </div>
+
+                    <div className = "input-container-space">
+                        <label id="label-margin"> <h3> Schedule 
+                            {showSched && <FontAwesomeIcon id="toggle-join" icon={faCircleChevronUp} onClick={()=>{setSched(!showSched)}} />}
+                            {!showSched && <FontAwesomeIcon id="toggle-join" icon={faCircleChevronDown} onClick={()=>{setSched(!showSched)}} />}
+                                </h3> 
+                        </label>
+                        {showSched && <ScheduleTable view="Team" id={teamID} > </ScheduleTable>}
                     </div>
 
                     <div className = "input-container-space">
