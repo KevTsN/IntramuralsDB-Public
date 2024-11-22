@@ -194,6 +194,50 @@ body {
   max-height: 514px;
 }
 
+#gm-info{
+@apply px-2;
+}
+.teams-playing{
+  @apply flex flex-row flex-1 px-2 justify-evenly; 
+}
+#tp-detail{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-around;
+  width: 180px;
+  overflow: hidden;
+  max-height: 85px;
+}
+
+#team-game-name{
+  @apply flex items-center;
+/* @apply px-1; */
+  /* overflow-wrap: anywhere; */
+  overflow: auto;
+  height: 65px;
+}
+
+#team-game-name h4,h3::-webkit-scrollbar { /* WebKit */
+  width: 0;
+  height: 0;
+}
+
+#team-game-name h4,h3{
+  /* overflow: auto; */
+}
+
+
+.schedule-game{
+  @apply flex flex-wrap flex-row border-2 border-white m-1 py-1 justify-between items-center w-full;
+
+}
+
+#schedule-table{
+  @apply flex flex-wrap w-full m-auto border-white rounded-md border-2 pt-1;
+
+}
+
 .tl-table{
   @apply flex flex-wrap w-full m-auto border-white rounded-md border-2 pt-1;
   max-height: 422px;

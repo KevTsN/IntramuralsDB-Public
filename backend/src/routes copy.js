@@ -542,3 +542,40 @@ export async function addPlayerByReq(req,res){
     })
 }
 
+export async function getGames(req,res){
+  let q = `select * from games`;
+  db.all(q, (err, rows) => {
+    if (err) {
+      console.error(err.message);
+      res.status(500).send('Internal server error');
+    } else {
+      res.send(rows);
+    }
+  });
+}
+
+export async function gamesForTeam(req,res){
+  const teamID = req.params.id;
+  let q = `select games.*, leagues.* from games left join teams on (games.homeID = teams.teamID or games.awayID = teams.teamID) left where teams.teamID=${teamID}`
+  db.all(q, (err,rows) => {
+    if(err){
+      console.error(err.message);
+      res.status(500).send("Internal server error.");}
+      else{
+        res.send(rows);
+      }
+    })
+}
+
+export async function gamesForStudent(req,res){
+  const studentID = req.params.id;
+  let q = `select games.gameTime, games.location, leagues.sport, leagues.genders, hm.name as homeName, aw.name as awayName from games left join players on (games.homeID = players.teamID or games.awayID = players.teamID) inner join leagues on (players.leagueID = leagues.leagueID) inner join teams as hm on (hm.teamID = games.homeID) inner join teams as aw on (aw.teamID = games.awayID) where players.studentID = ${studentID}`  
+  db.all(q, (err,rows) => {
+    if(err){
+      console.error(err.message);
+      res.status(500).send("Internal server error.");}
+      else{
+        res.send(rows);
+      }
+    })
+}

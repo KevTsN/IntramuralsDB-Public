@@ -16,7 +16,9 @@ import {leagues, availableLeagues,playerByID, players,
     addJoinRequest, 
     deleteJoinRequest, addPlayerByReq,
     getJoinRequestsByStudent,
-    getJoinRequestsByTeam} from "./src/routes copy.js"
+    getJoinRequestsByTeam,
+    getGames, gamesForStudent, gamesForTeam  
+  } from "./src/routes copy.js"
     
   app.post("/students", registerStudent);
   app.post("/teams", createTeam)
@@ -48,6 +50,10 @@ import {leagues, availableLeagues,playerByID, players,
   app.delete("/requests", deleteJoinRequest)
   app.get("/student/requests/:id", getJoinRequestsByStudent)
   app.get("/team/:id/requests/", getJoinRequestsByTeam)
+
+  app.get("/games/", getGames)
+  app.get("/teams/:id/games/", gamesForTeam)
+  app.get("/students/:id/games/", gamesForStudent)
 
   app.put("/requests", addPlayerByReq)
   
