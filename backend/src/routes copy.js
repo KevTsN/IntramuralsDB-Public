@@ -395,7 +395,6 @@ export async function checkLeagueForName(teamID, name){
       q = `select * from teams where leagueID=${leagueID} and name="${name}"`
       db.get(q, (err,row)=>{
         if(err) reject (err)
-          console.log(row)
         resolve(row !== undefined)
       })
     })
@@ -446,6 +445,10 @@ export async function deleteTeam(req, res){
 
   q = `update leagues set numTeams=numTeams -1 where leagueID=${leagueID}`;
   db.exec(q, function(err){ if(err) return res.send(err);})
+
+  q= `delete from games where (awayID = ${teamID} or homeID=${teamID})`
+  db.exec(q, function(err){ if(err) return res.send(err);})
+
 
   q = `delete from players where teamID=${teamID}`
   db.exec(q, function(err){ 
@@ -500,7 +503,7 @@ export function deleteJoinRequest(req,res){
 
   let q = `delete from join_requests where (teamID=${teamID} and studentID=${studentID})`;
   db.exec(q, function(err){ if(err) return res.send(err)
-    res.sendStatus(200);
+    // res.sendStatus(200);
     })
 }
 
@@ -508,19 +511,7 @@ export async function addPlayerByReq(req,res){
   const studentID = req.body.studentID;
   const teamID = req.body.teamID;
 
-  let q = `delete from join_requests where (teamID=${teamID} and studentID=${studentID})`;
-  db.exec(q, function(err){ 
-    if(err) return res.send(err);
-    res.sendStatus(200);
-  })
-
-
-
-  //adding player to team now
-  //this should deadass be refactored.
-  //especially considering the fact 
-
-  q = `SELECT teams.leagueID from teams LEFT JOIN leagues on (teams.leagueID = leagues.leagueID) where teamID=${teamID};`;
+  let q = `SELECT teams.leagueID from teams LEFT JOIN leagues on (teams.leagueID = leagues.leagueID) where teamID=${teamID};`;
 
   // if(await canJoin(teamID, studentID) === false){
   //   return false;
@@ -530,16 +521,68 @@ export async function addPlayerByReq(req,res){
 
   //delete where this player already in league
 
-  q = `delete from players where (leagueID=${leagueID} and studentID=${studentID})`;
-  db.exec(q, function(err){ if(err) return res.send(err);})
-  
+  q = `select * from players where (leagueID=${leagueID} and studentID=${studentID})`
+  db.get(q, (err,row)=>{
+    if(err) return res.send(err);
+    if(row){
+      const dupeTeamID = row.teamID;
+      let query = `update teams set numPlayers = numPlayers - 1 where teamID = ${dupeTeamID}`
+      db.exec(query, function(err){ if(err) return res.send(err);})
+    }
+  })
+
   q = `UPDATE teams set numPlayers = numPlayers + 1 where teamID=${teamID}`
   db.exec(q, function(err){ if(err) return res.send(err);})
 
+  q = `delete from players where (leagueID=${leagueID} and studentID=${studentID})`
+  db.exec(q, function(err){
+    if(err) return res.send(err);
+    })
+    
   q = `INSERT INTO players (studentID, teamID, leagueID) values (${studentID},${teamID},${leagueID})`
   db.exec(q, function(err){
     if(err) return res.send(err);
     })
+
+     
+  
+  q = `select * from teams where captainSID = ${studentID} and leagueID = ${leagueID}`
+  db.get(q, async (err, row) =>{
+    if(err) return res.send(err)
+    if(row !== undefined){
+      const nextStudentID = await findNextPlayerID(row.teamID)
+      if(nextStudentID != studentID){
+        q = `update teams set captainSID = ${nextStudentID} where teamID=${row.teamID}`
+        db.exec(q, function(err){ if(err) return res.send(err);})
+      }
+      else {
+        q = `delete from teams where teamID=${row.teamID}`;
+        db.exec(q, function(err){ if(err) return res.send(err);})
+    
+        q = `delete from join_requests where teamID=${row.teamID}`;
+        db.exec(q, function(err){ if(err) return res.send(err);})
+    
+        q = `update leagues set numTeams=numTeams -1 where leagueID=${leagueID}`;
+        db.exec(q, function(err){ if(err) return res.send(err);})
+    
+        q= `delete from games where (awayID = ${row.teamID} or homeID=${row.teamID})`
+        db.exec(q, function(err){ if(err) return res.send(err);})
+      }
+    }
+  })
+
+  deleteJoinRequest(req,res);
+
+}
+
+async function findNextPlayerID(teamID){
+  let q = `select studentID from players where teamID=${teamID}`
+  return new Promise((resolve,reject)=>{
+    db.get(q, (err,row)=>{
+      if(err) reject(err);
+      resolve(row.studentID)
+    })
+  })
 }
 
 export async function getGames(req,res){

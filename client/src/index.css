@@ -46,7 +46,7 @@ body {
 }
 
 .content{
-  @apply m-auto text-center w-5/6 h-5/6 flex-wrap flex w-full;
+  @apply m-auto text-center h-5/6 flex-wrap flex w-full;
   /* margin: auto;
   text-align: center;
   min-height:100%;

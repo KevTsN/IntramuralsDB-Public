@@ -677,14 +677,20 @@ export const ScheduleTable = ({view, id}) => {
         <>
         {loading && 
         
-            <div style={{margin:"auto"}}>
+            <div style={{margin:"auto", width: "100%"}}>
                 <p>Fetching games... </p>
             </div>}
-        {!loading && 
+        {!loading && indices.current.length > 0 && 
             <div id = "schedule-table">
             {indices.current.map((e) => {
                         return <Game key={e} gameObj={gamesList.at(e)}></Game>
                     })}
+            </div>
+        }
+
+        {!loading && indices.current.length <= 0 && 
+            <div style={{margin:"auto", width: "100%"}}>
+                <p>No games... FeelsBadMan </p>
             </div>
         }
         
