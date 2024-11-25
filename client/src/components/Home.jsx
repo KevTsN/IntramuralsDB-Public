@@ -239,14 +239,14 @@ export const TeamTableEntry = ({teamObj, view}) => {
     }
 
     let sportIcon = null;
-    switch(sport){
-        case "Soccer":
+    switch(sport.toUpperCase()){
+        case "SOCCER":
             sportIcon = <FontAwesomeIcon icon={faFutbol}> </FontAwesomeIcon>
             break;
-        case "Basketball":
+        case "BASKETBALL":
             sportIcon = <FontAwesomeIcon icon={faBasketball}></FontAwesomeIcon>
             break;
-        case "Volleyball":
+        case "VOLLEYBALL":
             sportIcon = <FontAwesomeIcon icon={faVolleyball}></FontAwesomeIcon>
             break;
         default:
@@ -509,14 +509,14 @@ const LeagueTableEntry = ({leagueObj, setIndex, currInd, setView, setTeams}) => 
     const navigate = useNavigate()
 
     let sportIcon = null;
-    switch(sport){
-        case "Soccer":
+    switch(sport.toUpperCase()){
+        case "SOCCER":
             sportIcon = <FontAwesomeIcon icon={faFutbol}> </FontAwesomeIcon>
             break;
-        case "Basketball":
+        case "BASKETBALL":
             sportIcon = <FontAwesomeIcon icon={faBasketball}></FontAwesomeIcon>
             break;
-        case "Volleyball":
+        case "VOLLEYBALL":
             sportIcon = <FontAwesomeIcon icon={faVolleyball}></FontAwesomeIcon>
             break;
         default:
