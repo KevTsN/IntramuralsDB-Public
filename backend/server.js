@@ -17,7 +17,12 @@ import {leagues, availableLeagues,playerByID, players,
     deleteJoinRequest, addPlayerByReq,
     getJoinRequestsByStudent,
     getJoinRequestsByTeam,
-    getGames, gamesForStudent, gamesForTeam  
+    getGames, gamesForStudent, gamesForTeam,  
+    addInvite,
+    deleteInvite,
+    getInvitesToTeam, getInvitesFromTeam,
+    acceptInvite,
+    leagueExclude
   } from "./src/routes copy.js"
     
   app.post("/students", registerStudent);
@@ -32,6 +37,8 @@ import {leagues, availableLeagues,playerByID, players,
   app.get("/teams", teams)
   app.get("/students", students)
   app.get("/teams/league/:id", teamsByLeague)
+  app.get("/teams/league/exclude/:id", leagueExclude)
+
   app.get("/players/:id", playerByID);
   app.get("/students/:id", studentByID);
   app.get("/teams/:id",teamByID)
@@ -56,6 +63,13 @@ import {leagues, availableLeagues,playerByID, players,
   app.get("/students/:id/games/", gamesForStudent)
 
   app.put("/requests", addPlayerByReq)
+
+  app.post("/invites", addInvite)
+  app.delete("/invites", deleteInvite)
+  app.get("/team/:id/inv-rec", getInvitesToTeam)
+  app.get("/team/:id/inv-sent", getInvitesFromTeam)
+
+  app.put("/invites", acceptInvite)
   
   app.listen(8800, () => {
     console.log("Connected to backend.");

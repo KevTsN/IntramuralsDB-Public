@@ -64,6 +64,9 @@ persist((set, get) =>({
   newCapID: 0,
   playersList: [],
   requestsList: [],
+  invitesSentList: [],
+  invitesRecList: [],
+
   updateName : (nv) => set(() => ({name: nv})),
   updateTeamID : (nv) => set(() => ({teamID: nv})),
   updateLeagueID : (nv) => set(() => ({leagueID: nv})),
@@ -71,6 +74,9 @@ persist((set, get) =>({
   updateCaptainSID : (nv) => set(() => ({captainSID: nv})),
   updatePlayers: (na) => set(() => ({playersList: na})),
   updateRequests: (na) => set(() => ({requestsList: na})),
+  updateInvitesSent: (na) => set(() => ({invitesSentList: na})),
+  updateInvitesRec: (na) => set(() => ({invitesRecList: na})),
+
   updateNewCap: (nv) => set(() => ({newCapID: nv})) 
 }),
 {

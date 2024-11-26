@@ -6,8 +6,8 @@ import { useStudentStore, useCurrTeamStore, useCurrLeagueStore } from "../Stores
 import { BackBtn } from "./Back"
 import { useShallow } from 'zustand/react/shallow'
 import {PropTypes} from 'prop-types'
-import { ScheduleTable } from "./Home"
-
+import { ScheduleTable } from "./ScheduleTable"
+import { InviteSendTable, InviteRecTable } from "./InviteTable"
 export function TeamEdit() {
 
     const navigate = useNavigate()
@@ -41,6 +41,8 @@ export function TeamEdit() {
     const [captainChange, capChanger] = useState(useCurrTeamStore(useShallow((state)=>state.captainSID)))
 
     const [reqShow, setReqShow] = useState(false)
+
+    const [gameReqShow, setGameReqShow] = useState(false)
     const onChangeClick = () => {
 
     setChange(false)
@@ -205,13 +207,24 @@ export function TeamEdit() {
                     </div>
                     
                     <div className = "input-container-space">
-                        <label id="label-margin"> <h3> Requests 
+                        <label id="label-margin"> <h3> Member Requests 
                             {reqShow && <FontAwesomeIcon id="toggle-join" icon={faCircleChevronUp} onClick={()=>{setReqShow(!reqShow)}} />}
                             {!reqShow && <FontAwesomeIcon id="toggle-join" icon={faCircleChevronDown} onClick={()=>{setReqShow(!reqShow)}} />}
                                 </h3> 
                         </label>
-                        {reqShow && <RequestTable requests={requests} > </RequestTable>}
+                        {reqShow && <MemberRequestTable requests={requests} > </MemberRequestTable>}
                     </div>
+
+
+                    <div className = "input-container-space">
+                        <label id="label-margin"> <h3> Game Invites 
+                            {gameReqShow && <FontAwesomeIcon id="toggle-join" icon={faCircleChevronUp} onClick={()=>{setGameReqShow(!gameReqShow)}} />}
+                            {!gameReqShow && <FontAwesomeIcon id="toggle-join" icon={faCircleChevronDown} onClick={()=>{setGameReqShow(!gameReqShow)}} />}
+                                </h3> 
+                        </label>
+                        {gameReqShow && <GameInviteTable id={teamID} > </GameInviteTable>}
+                    </div>
+
 
                     <div className = "input-container-space">
                         <label id="label-margin"> <h3> Schedule 
@@ -350,25 +363,25 @@ PlayerTableEntry.propTypes = {
     highlighted: PropTypes.bool
 }
 
-const RequestTable = ({requests}) => {
+const MemberRequestTable = ({requests}) => {
     const indices = [...Array(requests.length).keys()]
     console.log(requests)
     return(
 
         <div className="reqs-table">
             {indices.map((e) => {
-                    return <RequestTableEntry key={e} requestObj={requests.at(e)}></RequestTableEntry>
+                    return <MemberRequestTableEntry key={e} requestObj={requests.at(e)}></MemberRequestTableEntry>
                 })}
 
             </div>
     )
 }
 
-RequestTable.propTypes = {
+MemberRequestTable.propTypes = {
     requests: PropTypes.array
 }
 
-const RequestTableEntry = ({requestObj}) => {
+const MemberRequestTableEntry = ({requestObj}) => {
     const effectRan = useRef(false)
     const datetime = requestObj.requestTime.split('T')[0];
     const name = `${requestObj.firstName} ${requestObj.lastName}`
@@ -501,6 +514,60 @@ const RequestTableEntry = ({requestObj}) => {
      
 }
 
-RequestTableEntry.propTypes = {
+MemberRequestTableEntry.propTypes = {
     requestObj: PropTypes.object
 }
+
+const GameInviteTable = ({id}) => {
+    
+    const [showSend, setShow] = useState(false)
+    const received = useCurrTeamStore((state)=>state.invitesRecList)
+    const updateInvitesRec = useCurrTeamStore((state)=>state.updateInvitesRec)
+    const [teams, setTeams] = useState([])
+    const effectRan = useRef(false)
+    useEffect(()=>{
+
+        //  /teams/league/exclude/:id
+       if(effectRan.current == false){
+            const fetchTeamsExclude = async() => 
+                {
+                    const url = `http://localhost:8800/teams/league/exclude/${id}`
+                    const result = await fetch(url);
+                    result.json().then(json => {
+                        console.log(json);
+                        setTeams(json);
+                    })
+                }
+                const fetchReceived = async() => 
+                    {
+                        const url = `http://localhost:8800/team/${id}/inv-rec`
+                        const result = await fetch(url);
+                        result.json().then(json => {
+                            updateInvitesRec(json);
+                        })
+                    }
+                fetchTeamsExclude();
+                fetchReceived();
+            
+            return() => {
+                            effectRan.current = true;
+                        }
+            }
+        
+    })
+    return(
+
+        <>  
+        
+            {!showSend && <button style={{margin:"15px auto"}} onClick={()=>{setShow(!showSend)}}> Send New Invites </button>}
+            {!showSend && <InviteRecTable  invites={received} ></InviteRecTable>}
+
+
+            {showSend && <button style={{margin:"15px auto"}} onClick={()=>{setShow(!showSend)}}> Received Invites </button>}
+            {showSend && <InviteSendTable  teams={teams}></InviteSendTable>}
+
+
+            </>
+    )
+}
+
