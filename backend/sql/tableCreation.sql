@@ -6,4 +6,4 @@ create table join_requests (studentID int, teamID int, requestTime timestamp def
 create table games (homeID int, awayID int, location varchar(20) default 'Norm Fenn Gymnasium' , leagueID int, gameTime timestamp default current_timestamp, primary key(homeID, awayID, gameTime), 
 foreign key(homeID) references teams(teamID), foreign key (awayID) references teams(teamID), foreign key (leagueID) references leagues(leagueID));
 
-CREATE TABLE invites(senderID int, recipientID, location varchar(20) default 'Norm Fenn Gymnasium', primary key (senderID, recipientID), foreign key (senderID) references teams(teamID), foreign key (recipientID) references teams(teamID));
+CREATE TABLE invites(senderID int, recipientID, location varchar(20) default 'Norm Fenn Gymnasium', answered int default 0 , primary key (senderID, recipientID), foreign key (senderID) references teams(teamID), foreign key (recipientID) references teams(teamID));

@@ -22,7 +22,8 @@ import {leagues, availableLeagues,playerByID, players,
     deleteInvite,
     getInvitesToTeam, getInvitesFromTeam,
     acceptInvite,
-    leagueExclude
+    leagueExclude,
+    gamesBetween
   } from "./src/routes copy.js"
     
   app.post("/students", registerStudent);
@@ -70,6 +71,8 @@ import {leagues, availableLeagues,playerByID, players,
   app.get("/team/:id/inv-sent", getInvitesFromTeam)
 
   app.put("/invites", acceptInvite)
+
+  app.get("/games/:sender/:recipient", gamesBetween)
   
   app.listen(8800, () => {
     console.log("Connected to backend.");

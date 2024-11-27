@@ -666,6 +666,7 @@ export function deleteInvite(req,res){
   const recipientID = req.body.recipientID;
 
   let q = `delete from invites where (senderID=${senderID} and recipientID=${recipientID})`;
+  console.log(q);
   db.exec(q, function(err){ if(err) return res.send(err)
     // res.sendStatus(200);
     })
@@ -706,6 +707,29 @@ export async function leagueExclude(req, res) {
       res.status(500).send('Internal server error');
     } else {
       res.send(rows);
+    }
+  });
+}
+
+export async function gamesBetween(req,res){
+  const senderID = req.params.sender;
+  const recipientID = req.params.recipient;
+
+  let q = `select * from games where (homeID=${recipientID} and awayID=${senderID})`
+  
+  db.get(q, (err, row) => {
+    if (err) {
+      console.error(err.message);
+      return res.status(500).send('Internal server error');
+    } 
+    else {
+      if(row === undefined){
+        //no game exist
+        return res.json(false);       
+      }
+      else{
+        return res.json(true);       
+      }
     }
   });
 }

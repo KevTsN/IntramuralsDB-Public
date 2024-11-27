@@ -40,6 +40,7 @@ export const InviteSendEntry = ({teamObj}) => {
     const [dupeInv, setDupe] = useState(false)
     const [send, setSend] = useState(false)
     const [deleteInv, setDelete] = useState(false)
+    const [gameSet, setAlready] = useState(false) //just to have it blank
 
     const teamInv = useRef([])
 
@@ -73,24 +74,40 @@ export const InviteSendEntry = ({teamObj}) => {
     useEffect(()=>{
 
         const fetchInvitesSent = async() => {
-            {
                 const url = `http://localhost:8800/team/${currID}/inv-sent`
                 const result = await fetch(url);
                 result.json().then(json => {
                     teamInv.current = json;
+                    json.forEach(inv => {
+                        if(inv.recipientID == teamID){
+                            setDupe(true);
+                        }
+                    })
                 })
-            }
         }
 
-        if(!effectRan.current){
-            fetchInvitesSent();
-
-            teamInv.current.forEach(invite => {
-                console.log(invite)
-                if(invite.recipientID == teamID){
-                    return setDupe(true);
+        const existsGame = async() => {
+            const url = `http://localhost:8800/games/${currID}/${teamID}`
+            const result = await fetch(url);
+            result.json().then(json => {
+                if(json == true){
+                    setAlready(true);
                 }
-            });
+            })
+    }
+
+
+        if(!effectRan.current){
+            existsGame();
+            fetchInvitesSent();
+            
+            // teamInv.current.forEach(invite => {
+            //     if(invite.recipientID == teamID){
+            //         return setDupe(true);
+            //     }
+            // });
+            
+
 
             if(send){
                 const sendInvite = async() => {
@@ -113,7 +130,7 @@ export const InviteSendEntry = ({teamObj}) => {
                 sendInvite();
             }
 
-            else if(deleteInv){
+             if(deleteInv){
                 const deleteInv = async() => {
                     const myHeaders = new Headers();
                     myHeaders.append("Content-Type", "application/json");
@@ -122,16 +139,14 @@ export const InviteSendEntry = ({teamObj}) => {
                     method: "DELETE",
                     // 
                     body: JSON.stringify({ 
-                        recipientID: currID,
-                        teamID: teamID,
+                        senderID: currID,
+                        recipientID: teamID,
                     }),
 
                     headers: myHeaders,
                     });
                     if (response.ok){
-                        setDupe(false);
                         setSend(false);
-                        setDelete(false);
                         fetchInvitesSent();
                     }
             }
@@ -154,13 +169,18 @@ export const InviteSendEntry = ({teamObj}) => {
 
             <div className="entry-btns" id="league-entry-btns">
                 {/*invites*/}
-                {!dupeInv && !send && 
+                {!gameSet && !dupeInv && !send && 
                     <button className="req-btn"onClick={handleSend}>Invite to Game </button>}
-                {!dupeInv && send && 
+                { !gameSet && !dupeInv && send && 
                     <p id="req-sent">Invite has been sent!</p>}
                     
-                {dupeInv && !send &&
+                { !gameSet && dupeInv && !deleteInv &&
                     <button className="req-btn" id="req-btn-del" onClick={handleDeleteInv} >Delete Pending Invite</button>}
+                { !gameSet && dupeInv && deleteInv && 
+                    <p id="req-sent">Invite has been deleted.</p>}
+
+                { gameSet && 
+                            <p id="req-sent">Game already planned.</p>} 
             </div>
         </div>
     )
@@ -215,6 +235,7 @@ const InviteRecEntry = ({inviteObj}) => {
     
 
     useEffect(()=>{
+        
         const fetchInvitesRec = async() => {
             const result = await fetch(`http://localhost:8800/team/${recipient}/inv-rec/`, {
                 
@@ -246,15 +267,12 @@ const InviteRecEntry = ({inviteObj}) => {
                     headers: myHeaders,
                     });
                     if (response.ok){
-                        fetchInvitesRec();
+                        setDecline(false);
+                        setAccept(false);
+                    
                     }
                 }
                 acceptInvite();    
-                setDecline(false);
-                setAccept(false);
-                effectRan.current = false;
-                //state should be updated?
-
             }
             if(declined){
                 const declineInvite= async() => {
@@ -274,8 +292,6 @@ const InviteRecEntry = ({inviteObj}) => {
                         //see difference with setting state inside func vs outside
                         setDecline(false);
                         setAccept(false);
-                        effectRan.current = false;
-                        fetchInvitesRec();
                     }
                 }
                 declineInvite();
@@ -283,6 +299,7 @@ const InviteRecEntry = ({inviteObj}) => {
                 //state should be updated?
             }
             return()=>{
+                fetchInvitesRec();
                 effectRan.current = true;
             }
         }
