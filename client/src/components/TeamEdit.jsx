@@ -69,7 +69,6 @@ export function TeamEdit() {
     const [showSched, setSched] = useState(false)
     
     useEffect(()=>{
-        console.log(captainChange)
 
         if(effectRan.current == false){
             var youAreNotCaptain = false;
@@ -93,7 +92,6 @@ export function TeamEdit() {
                     
                 })
                 result.json().then(json => {
-                    console.log(json)
                         updateTeamRequests(json);
                     })
                 }
@@ -283,7 +281,6 @@ const PlayerTable = ({players, capChanger}) =>{
     const indices = [...Array(players.length).keys()]
     // useEffect(()=>{
     //     updateCap(captainChange);
-    //     console.log("new cap is " + currentCap)
     // })
     return(
             <div className="tl-table">
@@ -365,7 +362,6 @@ PlayerTableEntry.propTypes = {
 
 const MemberRequestTable = ({requests}) => {
     const indices = [...Array(requests.length).keys()]
-    console.log(requests)
     return(
 
         <div className="reqs-table">
@@ -426,7 +422,6 @@ const MemberRequestTableEntry = ({requestObj}) => {
                 
             })
             result.json().then(json => {
-                console.log(json)
                     updateTeamRequests(json);
                 })
             }
@@ -472,7 +467,6 @@ const MemberRequestTableEntry = ({requestObj}) => {
                 const declineRequest= async() => {
                     const myHeaders = new Headers();
                     myHeaders.append("Content-Type", "application/json");
-                    console.log("green fn")
                     const response = await fetch("http://localhost:8800/requests", {
                     method: "DELETE",
                     // 
@@ -534,7 +528,6 @@ const GameInviteTable = ({id}) => {
                     const url = `http://localhost:8800/teams/league/exclude/${id}`
                     const result = await fetch(url);
                     result.json().then(json => {
-                        console.log(json);
                         setTeams(json);
                     })
                 }

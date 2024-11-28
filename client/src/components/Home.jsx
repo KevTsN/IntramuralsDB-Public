@@ -40,8 +40,6 @@ export function Home(){
 
     const fullName = localStorage.getItem("fullName")
 
-    //console.log(teams)
-
     const effectRan = useRef(false)
 
     useEffect(()=>{
@@ -215,8 +213,6 @@ const LeagueTableEntry = ({leagueObj, setIndex, currInd, setView, setTeams}) => 
                 break;
         }
         stuTeams.forEach(element => {
-            console.log(element)
-            console.log(leagueID)
             if(element.leagueID == leagueID){
                 notInLeague.current = false;
                 return;
