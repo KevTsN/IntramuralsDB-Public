@@ -190,13 +190,11 @@ export const TeamTableEntry = ({teamObj, view}) => {
                 }
             });
             if(editClicked){
-                //console.log(teamID)
                 const fetchPlayers = async() => {
                         const result = await fetch(`http://localhost:8800/players/team/${teamID}`, {
                             
                         })
                         result.json().then(json => {
-                            //console.log(json)
                                 updatePlayers(json);
                             })
                         }
@@ -222,7 +220,6 @@ export const TeamTableEntry = ({teamObj, view}) => {
 
                     headers: myHeaders,
                     });
-                    console.log('yo')
                 } 
                 leaveTeam();
                 setLeaveConfirm(false);
@@ -252,7 +249,6 @@ export const TeamTableEntry = ({teamObj, view}) => {
             }
 
             if(deleteReq){
-                console.log("tried it lol")
                 const deleteRequest = async() => {
                     const myHeaders = new Headers();
                     myHeaders.append("Content-Type", "application/json");
