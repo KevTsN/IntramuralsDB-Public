@@ -623,3 +623,113 @@ export async function gamesForStudent(req,res){
       }
     })
 }
+
+export function addInvite(req,res){
+  const teamID = req.body.senderID;
+  const recipientID = req.body.recipientID;
+  let q = `insert into invites (senderID, recipientID) values (${teamID}, ${recipientID})`
+  db.exec(q, function(err){ 
+    if(err) return res.send(err)
+    res.sendStatus(200);
+    ;})
+}
+
+export function getInvitesToTeam(req,res){
+  const teamID = req.params.id;
+  let q = `select invites.*, teams.wins as senderWins, teams.losses as senderLosses, teams.numPlayers as senderPlayers, teams.name as senderName from invites left join teams on (invites.senderID = teams.teamID) where invites.recipientID = ${teamID}`;
+  db.all(q, (err, rows) => {
+    if (err) {
+      console.error(err.message);
+      res.status(500).send('Internal server error');
+    } else {
+      res.send(rows);
+    }
+  });
+}
+
+export function getInvitesFromTeam(req,res){
+  const teamID = req.params.id;
+  let q = `select invites.*, teams.wins, teams.losses, teams.numPlayers from invites left join teams on (invites.recipientID = teams.teamID) where invites.senderID = ${teamID}`;
+  db.all(q, (err, rows) => {
+    if (err) {
+      console.error(err.message);
+      res.status(500).send('Internal server error');
+    } else {
+      res.send(rows);
+    }
+  });
+}
+
+
+export function deleteInvite(req,res){
+  const senderID = req.body.senderID;
+  const recipientID = req.body.recipientID;
+
+  let q = `delete from invites where (senderID=${senderID} and recipientID=${recipientID})`;
+  console.log(q);
+  db.exec(q, function(err){ if(err) return res.send(err)
+    // res.sendStatus(200);
+    })
+}
+
+export function acceptInvite(req,res){
+  const senderID = req.body.senderID;
+  const recipientID = req.body.recipientID;
+
+  let q = `insert into games (homeID, awayID) values (${recipientID}, ${senderID})`
+  db.exec(q, function(err){ if(err) return res.send(err)
+    // res.sendStatus(200);
+    })
+
+  q = `update games set location = (select leagues.location from leagues left join teams on (teams.leagueID = leagues.leagueID) where teams.teamID = games.homeID)`;
+  //careful brate it does it for everyyyy game lmao
+  db.exec(q, function(err){ if(err) return res.send(err)
+    // res.sendStatus(200);
+    })
+  
+    q = `update games set leagueID = (select leagues.leagueID from leagues left join teams on (teams.leagueID = leagues.leagueID) where teams.teamID = games.homeID)`;
+    db.exec(q, function(err){ if(err) return res.send(err)
+    // res.sendStatus(200);
+    })
+
+  deleteInvite(req,res);
+}
+
+export async function leagueExclude(req, res) {
+  const teamID = req.params.id;
+  let leagueID = await getLeagueId(teamID)
+
+  const q = ` SELECT teams.*, leagues.genders, leagues.sport from teams inner join leagues ON (teams.leagueID = leagues.leagueID and leagues.leagueID = ${leagueID}) WHERE teams.teamID != ${teamID}`;
+
+  db.all(q, (err, rows) => {
+    if (err) {
+      console.error(err.message);
+      res.status(500).send('Internal server error');
+    } else {
+      res.send(rows);
+    }
+  });
+}
+
+export async function gamesBetween(req,res){
+  const senderID = req.params.sender;
+  const recipientID = req.params.recipient;
+
+  let q = `select * from games where (homeID=${recipientID} and awayID=${senderID})`
+  
+  db.get(q, (err, row) => {
+    if (err) {
+      console.error(err.message);
+      return res.status(500).send('Internal server error');
+    } 
+    else {
+      if(row === undefined){
+        //no game exist
+        return res.json(false);       
+      }
+      else{
+        return res.json(true);       
+      }
+    }
+  });
+}

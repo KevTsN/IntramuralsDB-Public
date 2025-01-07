@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useRef } from "react"
-import {TeamTableEntry} from './Home'
+import {TeamTableEntry} from './TeamTable'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {faVolleyball, faBasketball, faFutbol, faPersonRunning} from '@fortawesome/free-solid-svg-icons'
 import { useNavigate } from "react-router-dom"

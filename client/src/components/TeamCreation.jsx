@@ -56,7 +56,6 @@ const navigate = useNavigate()
         }
         fetchPotentialError();
         if(nameInLeague){
-            console.log('huh')
             return () => {
                 effectRan.current = true;
             }
@@ -65,7 +64,6 @@ const navigate = useNavigate()
         const createTeam = async() => {
         let calcID = Math.floor(Math.random() * 9999999) + 1000000;
         const myHeaders = new Headers();
-        console.log(calcID)
         myHeaders.append("Content-Type", "application/json");
         const response = await fetch("http://localhost:8800/teams", {
             method: "POST",

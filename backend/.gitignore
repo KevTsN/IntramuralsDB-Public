@@ -29,5 +29,7 @@ jspm_packages/
 # dotenv environment variables file
 .env
 
-#databases
-.db
+
+# database stuff
+sql/database.db
+sql/demoDb.db
